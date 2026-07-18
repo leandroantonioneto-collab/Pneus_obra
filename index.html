@@ -1,86 +1,32 @@
--- ═══════════════════════════════════════════════════════════
--- APP BORRACHEIROS — SETUP SUPABASE
--- Execute no SQL Editor do Supabase ANTES de usar o app
--- ═══════════════════════════════════════════════════════════
 
--- ─────────────────────────────────────────────────────────
--- 1. TABELA DE USUÁRIOS (borracheiros)
--- ─────────────────────────────────────────────────────────
-create table if not exists usuarios (
-  id          serial primary key,
-  nome        text not null,
-  login       text unique not null,
-  senha_hash  text not null,          -- SHA-256 da senha (sem servidor)
-  cargo       text default 'Borracheiro',
-  ativo       boolean default true,
-  created_at  timestamptz default now()
-);
-
--- Políticas
-alter table usuarios enable row level security;
-create policy "leitura publica usuarios" on usuarios for select using (true);
-create policy "insercao publica usuarios" on usuarios for insert with check (true);
-
--- Usuários iniciais (senha: 1234 = SHA-256 abaixo)
--- SHA-256 de '1234' = 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
-insert into usuarios (nome, login, senha_hash, cargo) values
-('Leandro Neto',    'leandro',   '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'Engenheiro'),
-('Borracheiro 01',  'borra01',   '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'Borracheiro'),
-('Borracheiro 02',  'borra02',   '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'Borracheiro'),
-('Borracheiro 03',  'borra03',   '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'Borracheiro')
-on conflict (login) do nothing;
-
--- ─────────────────────────────────────────────────────────
--- 2. ADICIONAR COLUNA DE FOTO NAS TABELAS EXISTENTES
--- ─────────────────────────────────────────────────────────
-alter table movimentacoes add column if not exists foto_url  text;
-alter table movimentacoes add column if not exists usuario_id int references usuarios(id);
-alter table movimentacoes add column if not exists latitude   numeric(10,7);
-alter table movimentacoes add column if not exists longitude  numeric(10,7);
-alter table movimentacoes add column if not exists obs_campo  text;
-
-alter table falhas add column if not exists foto_url   text;
-alter table falhas add column if not exists usuario_id int references usuarios(id);
-alter table falhas add column if not exists latitude   numeric(10,7);
-alter table falhas add column if not exists longitude  numeric(10,7);
-
-alter table medicoes_sulco add column if not exists foto_url   text;
-alter table medicoes_sulco add column if not exists usuario_id int references usuarios(id);
-alter table medicoes_sulco add column if not exists calibragem_psi numeric(5,1);
-
--- ─────────────────────────────────────────────────────────
--- 3. TABELA DE LOGS DE ACESSO
--- ─────────────────────────────────────────────────────────
-create table if not exists logs_acesso (
-  id          serial primary key,
-  usuario_id  int references usuarios(id),
-  acao        text,
-  tabela      text,
-  registro_id int,
-  created_at  timestamptz default now()
-);
-alter table logs_acesso enable row level security;
-create policy "insercao log" on logs_acesso for insert with check (true);
-create policy "leitura log"  on logs_acesso for select using (true);
-
--- ─────────────────────────────────────────────────────────
--- 4. STORAGE BUCKET PARA FOTOS
--- Execute manualmente no painel Supabase:
--- Storage → New bucket → Nome: "fotos-pneus" → Public: SIM
--- ─────────────────────────────────────────────────────────
-
--- ─────────────────────────────────────────────────────────
--- 5. POLICY DE INSERT NAS TABELAS EXISTENTES
--- (para que o app possa inserir dados)
--- ─────────────────────────────────────────────────────────
--- Movimentacoes update (para atualizar foto_url após upload)
-create policy "update movimentacoes" on movimentacoes for update using (true);
-create policy "update falhas"        on falhas        for update using (true);
-create policy "update medicoes"      on medicoes_sulco for update using (true);
-
--- ═══════════════════════════════════════════════════════════
--- APÓS EXECUTAR ESTE SQL:
--- 1. Vá em Storage → New Bucket → Nome: fotos-pneus → Public: SIM
--- 2. Suba o app_borracheiros.html para o GitHub Pages
--- 3. Distribua a URL para os borracheiros
--- ═══════════════════════════════════════════════════════════
+Olá, Leandro! 👋
+Sábado, 18/07/2026
+Sair
+0
+Hoje
+0
+Semana
+0
+Total
+Registrar operação
+🔩
+Montagem
+Instalar pneu no equip.
+🔧
+Remoção
+Retirar pneu do equip.
+🔄
+Rodízio
+Trocar posição / equip.
+♻️
+Recapagem
+Envio / retorno
+🗑️
+Descarte
+Pneu inutilizado
+📏
+Sulco
+Medir profundidade
+🚨
+Registrar Falha
+Estouro, corte, desgaste irregular
