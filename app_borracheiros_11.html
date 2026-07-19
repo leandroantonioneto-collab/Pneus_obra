@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0d3b8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Módulo 1 — Pneus</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--az:#0d3b8a;--vd:#15803d;--vm:#7c2d12;--bz:#fff;--bg:#f0f4f8;--bd:#dde5ef;--tx:#0b1420;--tx2:#6b7280;--sh:0 2px 8px rgba(0,0,0,.1);}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:inherit;outline:none;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.on{display:flex;}
+
+/* LOGIN */
+#sl{background:linear-gradient(160deg,#08182e,#0d3b8a 60%,#1c56c0);align-items:center;justify-content:center;padding:1.5rem;}
+.lbox{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:1.2rem;padding:2rem 1.75rem;width:100%;max-width:340px;}
+.llogo{text-align:center;margin-bottom:1.5rem;}
+.llogo span{font-size:2.8rem;display:block;}
+.llogo h1{color:#fff;font-size:1.15rem;font-weight:900;margin-top:.4rem;}
+.llogo small{color:rgba(255,255,255,.5);font-size:.72rem;}
+.lf{margin-bottom:.85rem;}
+.lf label{display:block;color:rgba(255,255,255,.6);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
+.lf input{width:100%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:#fff;padding:.72rem .9rem;border-radius:.55rem;font-size:.95rem;}
+.lf input::placeholder{color:rgba(255,255,255,.3);}
+.lf input:focus{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.18);}
+.lbtn{width:100%;background:#fff;color:var(--az);padding:.82rem;border-radius:.6rem;font-size:.95rem;font-weight:900;margin-top:.25rem;}
+.lbtn:active{opacity:.9;}
+.lerr{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:.55rem .85rem;border-radius:.45rem;font-size:.78rem;margin-top:.65rem;display:none;text-align:center;}
+.ldbg{background:rgba(0,0,0,.25);border-radius:.45rem;padding:.6rem .75rem;margin-top:.65rem;font-size:.68rem;color:rgba(255,255,255,.7);line-height:1.7;display:none;word-break:break-all;}
+
+/* TOPBAR */
+.topbar{color:#fff;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.2);padding-top:calc(.85rem + env(safe-area-inset-top));}
+.topbar.az{background:var(--az);}
+.topbar.vd{background:var(--vd);}
+.topbar.vm{background:var(--vm);}
+.topbar h2{font-size:.9rem;font-weight:800;}
+.tbr{display:flex;align-items:center;gap:.5rem;}
+.cargo-badge{font-size:.62rem;font-weight:700;padding:.12rem .42rem;border-radius:9999px;background:rgba(255,255,255,.2);}
+.sair{background:rgba(255,255,255,.15);color:#fff;padding:.3rem .6rem;border-radius:.38rem;font-size:.7rem;font-weight:700;}
+
+/* HOME */
+.hdr{color:#fff;padding:1rem 1rem .85rem;}
+.hdr.az{background:linear-gradient(135deg,#08182e,#0d3b8a 70%);}
+.hdr.vd{background:linear-gradient(135deg,#052e16,#15803d 70%);}
+.hdr.vm{background:linear-gradient(135deg,#3b0764,#7c2d12 70%);}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.hdr-name{font-size:.92rem;font-weight:800;}
+.hdr-date{font-size:.7rem;color:rgba(255,255,255,.55);margin-top:.1rem;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.8rem;}
+.stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:.5rem;padding:.5rem .4rem;text-align:center;}
+.stat .v{font-size:1.2rem;font-weight:800;color:#fff;}
+.stat .l{font-size:.58rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em;}
+.sec{font-size:.67rem;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;padding:.75rem 1rem .3rem;}
+.ops{display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;padding:0 .9rem .9rem;}
+.op{background:#fff;border:1px solid var(--bd);border-radius:.7rem;padding:.85rem .7rem;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.op:active{transform:scale(.96);}
+.op::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.op.az::before{background:#1e40af;} .op.vd::before{background:#15803d;} .op.lj::before{background:#c2410c;}
+.op.vm::before{background:#b91c1c;} .op.tl::before{background:#0e7490;} .op.gy::before{background:#6b7280;}
+.op.am::before{background:#a16207;} .op.pr::before{background:#7c2d12;}
+.op .ico{font-size:1.75rem;margin-bottom:.38rem;}
+.op .lb{font-size:.78rem;font-weight:700;}
+.op .ds{font-size:.63rem;color:var(--tx2);margin-top:.12rem;}
+.op.full{grid-column:1/-1;}
+
+/* FORM */
+#sf{flex-direction:column;}
+.fhdr{color:#fff;padding:1rem;display:flex;align-items:center;gap:.7rem;padding-top:calc(1rem + env(safe-area-inset-top));}
+.fhdr.az{background:var(--az);} .fhdr.vd{background:var(--vd);} .fhdr.vm{background:var(--vm);}
+.bk{background:rgba(255,255,255,.15);color:#fff;padding:.4rem .68rem;border-radius:.4rem;font-size:.8rem;font-weight:700;}
+.fhi{flex:1;}
+.fhi h2{font-size:.88rem;font-weight:800;}
+.fhi .fs{font-size:.67rem;color:rgba(255,255,255,.6);margin-top:.08rem;}
+.fbody{flex:1;overflow-y:auto;padding:.85rem;}
+.fsec{background:#fff;border:1px solid var(--bd);border-radius:.7rem;padding:.85rem;margin-bottom:.7rem;box-shadow:var(--sh);}
+.fsec h3{font-size:.68rem;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
+.field{margin-bottom:.75rem;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:.74rem;font-weight:700;color:#374151;margin-bottom:.28rem;}
+.req{color:#b91c1c;margin-left:.1rem;}
+.hint{color:var(--tx2);font-weight:500;font-size:.66rem;margin-left:.3rem;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--bd);color:var(--tx);padding:.62rem .78rem;border-radius:.5rem;font-size:.88rem;-webkit-appearance:none;appearance:none;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;padding-right:2rem;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#1e56c0;background:#fff;}
+.field textarea{resize:none;height:70px;line-height:1.5;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+.frow .field{margin-bottom:0;}
+.dot-tip{background:#f1f5f9;border-radius:.4rem;padding:.45rem .6rem;margin-top:.35rem;font-size:.67rem;color:var(--tx2);line-height:1.55;}
+.fogo-prev{background:linear-gradient(135deg,#0d3b8a,#1e56c0);color:#fff;border-radius:.45rem;padding:.5rem .7rem;margin-top:.35rem;text-align:center;font-family:ui-monospace,monospace;font-size:1rem;font-weight:800;letter-spacing:.12em;display:none;}
+.fogo-prev small{display:block;font-size:.58rem;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:.05em;margin-bottom:.1rem;}
+.foto-area{border:2px dashed var(--bd);border-radius:.65rem;padding:1rem;text-align:center;position:relative;background:var(--bg);cursor:pointer;}
+.foto-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.foto-area .fi{font-size:1.6rem;display:block;color:var(--tx2);}
+.foto-area .ft{font-size:.74rem;font-weight:600;color:var(--tx2);}
+.foto-area .fs2{font-size:.63rem;color:#9ca3af;margin-top:.12rem;}
+.foto-prev{border-radius:.65rem;overflow:hidden;position:relative;max-height:190px;}
+.foto-prev img{width:100%;object-fit:cover;display:block;}
+.foto-prev .frm{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.foto-req{font-size:.65rem;color:#b91c1c;font-weight:600;margin-top:.28rem;display:none;}
+.ffooter{padding:.85rem;background:#fff;border-top:1px solid var(--bd);padding-bottom:calc(.85rem + env(safe-area-inset-bottom));}
+.sbtn{width:100%;color:#fff;padding:.82rem;border-radius:.6rem;font-size:.95rem;font-weight:900;display:flex;align-items:center;justify-content:center;gap:.45rem;}
+.sbtn.az{background:var(--az);} .sbtn.vd{background:var(--vd);} .sbtn.vm{background:var(--vm);}
+.sbtn:active{opacity:.88;} .sbtn:disabled{background:#9ca3af;}
+
+/* SUCESSO */
+#ss{align-items:center;justify-content:center;text-align:center;padding:2rem;}
+#ss.az{background:linear-gradient(135deg,#08182e,#0d3b8a);}
+#ss.vd{background:linear-gradient(135deg,#052e16,#15803d);}
+#ss.vm{background:linear-gradient(135deg,#3b0764,#7c2d12);}
+.sico{font-size:4.5rem;animation:pop .4s ease;margin-bottom:.85rem;}
+@keyframes pop{0%{transform:scale(.4);}70%{transform:scale(1.1);}100%{transform:scale(1);}}
+.stit{color:#fff;font-size:1.35rem;font-weight:900;margin-bottom:.35rem;}
+.ssub{color:rgba(255,255,255,.6);font-size:.8rem;}
+.sdet{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:.65rem;padding:.85rem 1rem;margin:1.2rem 0;text-align:left;width:100%;max-width:340px;}
+.sdet .row{display:flex;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.76rem;color:rgba(255,255,255,.75);}
+.sdet .row:last-child{border:none;}
+.sdet .row b{color:#fff;font-family:ui-monospace,monospace;}
+.nbtn{background:#fff;padding:.78rem 2rem;border-radius:.6rem;font-size:.9rem;font-weight:900;margin-top:.4rem;}
+.nbtn.az{color:var(--az);} .nbtn.vd{color:var(--vd);} .nbtn.vm{color:var(--vm);}
+
+/* LOADING / TOAST */
+.lov{position:fixed;inset:0;background:rgba(8,24,46,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:.85rem;z-index:999;}
+.lov.on{display:flex;}
+.spin{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .75s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.ltxt{color:rgba(255,255,255,.75);font-size:.8rem;font-weight:600;}
+.toast{position:fixed;bottom:calc(1.2rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:.62rem 1.1rem;border-radius:9999px;font-size:.77rem;font-weight:600;z-index:1000;opacity:0;transition:.3s;white-space:nowrap;max-width:92vw;text-align:center;}
+.toast.on{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="lov" id="LOV"><div class="spin"></div><div class="ltxt" id="LTXT">Aguarde...</div></div>
+<div class="toast" id="TOAST"></div>
+
+<!-- LOGIN -->
+<div class="screen on" id="sl">
+<div class="lbox">
+  <div class="llogo"><span>🛞</span><h1>Módulo 1 — Pneus</h1><small>Obra de Duplicação · v3.0</small></div>
+  <div class="lf"><label>Login</label><input id="IL" placeholder="ex: leandro / borra01 / almox01" autocapitalize="none" autocorrect="off" spellcheck="false"/></div>
+  <div class="lf"><label>Senha</label><input id="IS" type="password" placeholder="••••••••"/></div>
+  <button class="lbtn" id="LBTN" onclick="login()">ENTRAR</button>
+  <div class="lerr" id="LERR">Login ou senha incorretos.</div>
+  <div class="ldbg" id="LDBG"></div>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="sh">
+<div class="hdr" id="HDR">
+  <div class="hdr-top">
+    <div><div class="hdr-name" id="HN"></div><div class="hdr-date" id="HD"></div></div>
+    <button class="sair" onclick="sair()">Sair</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v" id="SH">—</div><div class="l">Hoje</div></div>
+    <div class="stat"><div class="v" id="SS">—</div><div class="l">Semana</div></div>
+    <div class="stat"><div class="v" id="ST">—</div><div class="l">Total</div></div>
+  </div>
+</div>
+<div class="sec" id="HSEC">Operações</div>
+<div class="ops" id="OPS"></div>
+</div>
+
+<!-- FORM -->
+<div class="screen" id="sf">
+<div class="fhdr" id="FHDR">
+  <button class="bk" onclick="voltar()">← Voltar</button>
+  <div class="fhi"><h2 id="FTIT">—</h2><div class="fs" id="FSUB"></div></div>
+</div>
+<div class="fbody" id="FBODY"></div>
+<div class="ffooter"><button class="sbtn" id="SBTN" onclick="salvar()"><span>✅</span><span id="STXT">SALVAR</span></button></div>
+</div>
+
+<!-- SUCESSO -->
+<div class="screen" id="ss">
+<div class="sico">✅</div>
+<div class="stit">Salvo!</div>
+<div class="ssub">Registro enviado ao sistema.</div>
+<div class="sdet" id="SDET"></div>
+<button class="nbtn" id="NBTN" onclick="voltar()">➕ Nova operação</button>
+</div>
+
+<script>
+const URL_SB='https://nskhtlravltryiqzczil.supabase.co';
+const KEY_SB='sb_publishable_YWHe6f8puoqhEmkdTOXehA_MZRKC99x';
+const BUCKET='FOTOS%20E%20PNEUS';
+let U=null,OP=null,FOTO=null,EQUIPS=[],PNEUS=[];
+const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const COR={Engenheiro:'az',Almoxarife:'vd',Borracheiro:'vm'};
+
+// UTILS
+function sc(id){return document.getElementById(id);}
+function vl(id){const e=sc(id);return e?e.value.trim():'';}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));sc(id).classList.add('on');window.scrollTo(0,0);}
+function load(s,t='Aguarde...'){sc('LOV').classList[s?'add':'remove']('on');sc('LTXT').textContent=t;}
+function toast(m,d=2500){const t=sc('TOAST');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d);}
+function hoje(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function dbg(m){const d=sc('LDBG');d.style.display='block';d.innerHTML+=m+'<br>';}
+
+// SUPABASE
+async function api(tabela,params='',method='GET',body=null){
+  const r=await fetch(`${URL_SB}/rest/v1/${tabela}?${params}`,{
+    method,headers:{'apikey':KEY_SB,'Authorization':`Bearer ${KEY_SB}`,
+    'Content-Type':'application/json','Prefer':'return=representation'},
+    body:body?JSON.stringify(body):undefined
+  });
+  if(!r.ok){const e=await r.text();throw new Error(e);}
+  return method==='GET'?r.json():r;
+}
+async function upload(file,path){
+  const r=await fetch(`${URL_SB}/storage/v1/object/${BUCKET}/${path}`,{
+    method:'POST',headers:{'apikey':KEY_SB,'Authorization':`Bearer ${KEY_SB}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!r.ok)throw new Error('Erro no upload');
+  return `${URL_SB}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+// LOGIN
+async function login(){
+  const l=sc('IL').value.trim().toLowerCase();
+  const s=sc('IS').value.trim();
+  if(!l||!s){toast('Preencha login e senha');return;}
+  sc('LBTN').disabled=true;
+  sc('LDBG').innerHTML='';
+  load(true,'Verificando...');
+  try{
+    dbg('Buscando usuário: '+l);
+    const users=await api('usuarios',`login=eq.${encodeURIComponent(l)}&ativo=eq.true&select=*`);
+    dbg('Encontrados: '+(users?.length||0));
+    if(!users||!users.length){sc('LERR').style.display='block';load(false);sc('LBTN').disabled=false;return;}
+    const u=users[0];
+    dbg('Nome: '+u.nome+' | Cargo: '+u.cargo);
+    dbg('senha_plain: '+(u.senha_plain||'(vazio)'));
+    // Verificar senha plain (funciona em todos os dispositivos)
+    let ok=u.senha_plain&&s===u.senha_plain;
+    dbg('senha plain ok: '+ok);
+    if(!ok){
+      // Tentar SHA-256
+      try{
+        const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+        const h=Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+        ok=(h===u.senha_hash);
+        dbg('SHA256 ok: '+ok);
+      }catch(e){dbg('SHA256 erro: '+e.message);}
+    }
+    if(!ok){sc('LERR').style.display='block';load(false);sc('LBTN').disabled=false;return;}
+    sc('LERR').style.display='none';
+    U=u;localStorage.setItem('M1U',JSON.stringify(u));
+    await carregarBase();
+    await stats();
+    home();
+    load(false);
+  }catch(e){dbg('ERRO: '+e.message);toast('Erro de conexão');load(false);sc('LBTN').disabled=false;}
+}
+
+function sair(){localStorage.removeItem('M1U');U=null;show('sl');sc('IS').value='';}
+
+// DADOS
+async function carregarBase(){
+  try{
+    EQUIPS=await api('equipamentos','select=cod,tipo,marca_modelo,medida_padrao&status=eq.Ativo&order=cod');
+    PNEUS=await api('pneus','select=id,numero_fogo,marca,medida,status&order=numero_fogo');
+  }catch(e){console.error(e);}
+}
+
+async function stats(){
+  if(!U)return;
+  try{
+    const uid=U.id,h=hoje();
+    const sem=new Date();sem.setDate(sem.getDate()-7);const sw=sem.toISOString().slice(0,10);
+    const [ah,as,at]=await Promise.all([
+      api('movimentacoes',`usuario_id=eq.${uid}&created_at=gte.${h}&select=id`),
+      api('movimentacoes',`usuario_id=eq.${uid}&created_at=gte.${sw}&select=id`),
+      api('movimentacoes',`usuario_id=eq.${uid}&select=id`)
+    ]);
+    sc('SH').textContent=ah.length;sc('SS').textContent=as.length;sc('ST').textContent=at.length;
+  }catch(e){}
+}
+
+// HOME
+function home(){
+  const d=new Date(),c=COR[U.cargo]||'az';
+  sc('HDR').className=`hdr ${c}`;
+  sc('HN').textContent=`Olá, ${U.nome.split(' ')[0]}! 👋`;
+  sc('HD').textContent=`${DIAS[d.getDay()]}, ${d.toLocaleDateString('pt-BR')} · ${U.cargo}`;
+  sc('SBTN').className=`sbtn ${c}`;
+  sc('NBTN').className=`nbtn ${c}`;
+  sc('ss').className=`screen ${c}`;
+  renderOps(c);
+  show('sh');
+}
+
+function renderOps(c){
+  const g=sc('OPS'),s=sc('HSEC');
+  const btnAlmox=`
+    <div class="op az" onclick="form('pneu-novo')"><div class="ico">📦</div><div class="lb">Pneu novo</div><div class="ds">Entrada compra/NF</div></div>
+    <div class="op lj" onclick="form('retorno-recap')"><div class="ico">♻️</div><div class="lb">Retorno recap.</div><div class="ds">Pneu recapado</div></div>
+    <div class="op tl" onclick="form('transf-entrada')"><div class="ico">🚛</div><div class="lb">Transf. entrada</div><div class="ds">De outra obra</div></div>
+    <div class="op gy" onclick="form('transf-saida')"><div class="ico">📤</div><div class="lb">Transf. saída</div><div class="ds">Para outra obra</div></div>`;
+  const btnCampo=`
+    <div class="op az" onclick="form('cad-montado')"><div class="ico">🔩</div><div class="lb">Cadastrar montado</div><div class="ds">Pneu já no equip.</div></div>
+    <div class="op vd" onclick="form('montagem')"><div class="ico">⬆️</div><div class="lb">Montagem</div><div class="ds">Do estoque</div></div>
+    <div class="op gy" onclick="form('remocao')"><div class="ico">⬇️</div><div class="lb">Remoção</div><div class="ds">Retirar</div></div>
+    <div class="op tl" onclick="form('rodizio')"><div class="ico">🔄</div><div class="lb">Rodízio</div><div class="ds">Trocar posição</div></div>
+    <div class="op lj" onclick="form('recapagem')"><div class="ico">♻️</div><div class="lb">Envio recap.</div><div class="ds">Mandar recapar</div></div>
+    <div class="op am" onclick="form('sulco')"><div class="ico">📏</div><div class="lb">Sulco</div><div class="ds">Medir (mm)</div></div>
+    <div class="op vm" onclick="form('descarte')"><div class="ico">🗑️</div><div class="lb">Descarte</div><div class="ds">Inutilizado</div></div>
+    <div class="op pr full" onclick="form('falha')"><div class="ico">🚨</div><div class="lb">Registrar falha</div><div class="ds">Estouro · corte · desgaste irregular</div></div>`;
+
+  if(U.cargo==='Almoxarife'){s.textContent='Almoxarifado';g.innerHTML=btnAlmox;}
+  else if(U.cargo==='Borracheiro'){s.textContent='Campo — registrar';g.innerHTML=btnCampo;}
+  else{s.textContent='Engenheiro — acesso completo';g.innerHTML=btnAlmox+btnCampo;}
+}
+
+// FORM HELPERS
+const MARCAS=['Bridgestone','Goodyear','Michelin','Pirelli','Triangle','Continental','Dunlop','BKT','Alliance','Titan','Outro'];
+const MEDIDAS=['17.5-25','23.1-26','18.4-26','295/80R22.5','275/80R22.5','315/80R22.5','12.5/80-18','12-16.5','750/65R26','1200/20','Outra'];
+const POS=['Dianteiro esq.','Dianteiro dir.','Trs. esq. 1° eixo','Trs. dir. 1° eixo','Trs. esq. 2° eixo','Trs. dir. 2° eixo','Trs. ext. E 1°','Trs. int. E 1°','Trs. int. D 1°','Trs. ext. D 1°','Trs. ext. E 2°','Trs. ext. D 2°','Eixo diant. esq.','Eixo diant. dir.','Eixo tras. esq.','Eixo tras. dir.','Eixo 1 esq.','Eixo 1 dir.','Eixo 2 esq.','Eixo 2 dir.'];
+const TFALHA=['Desgaste irregular','Corte','Perfuração','Estouro','Falha recapagem','Bolha lateral','Separação de banda','Outro'];
+const CAUSAS=['Pressão inadequada','Terreno abrasivo','Objeto cortante','Recapagem defeituosa','Sobrecarga','Velocidade excessiva','Alinhamento','Desgaste natural','Outro'];
+
+const oE=()=>'<option value="">Selecione equipamento</option>'+EQUIPS.map(e=>`<option value="${e.cod}">${e.cod} · ${(e.tipo||'').replace(/^[A-Z]+ - /,'')} · ${e.medida_padrao||''}</option>`).join('');
+const oM=()=>'<option value="">Selecione marca</option>'+MARCAS.map(m=>`<option>${m}</option>`).join('');
+const oMd=()=>'<option value="">Selecione medida</option>'+MEDIDAS.map(m=>`<option>${m}</option>`).join('');
+const oP=()=>'<option value="">Selecione posição</option>'+POS.map(p=>`<option>${p}</option>`).join('');
+const oPn=(s=null)=>'<option value="">Selecione pneu (fogo)</option>'+(s?PNEUS.filter(p=>p.status===s):PNEUS).map(p=>`<option value="${p.id}">${p.numero_fogo||'#'+p.id} · ${p.marca||''} ${p.medida||''} (${p.status})</option>`).join('');
+
+const campoFogo=`<div class="field"><label>Número de fogo<span class="req">*</span></label>
+  <input id="FF" placeholder="ex: 2025-001" oninput="this.value=this.value.toUpperCase();const p=sc('FP');if(this.value){p.style.display='block';p.textContent=this.value;}else p.style.display='none';" autocapitalize="characters"/>
+  <div class="fogo-prev" id="FP"></div></div>`;
+const campoDOT=`<div class="field"><label>DOT<span class="req">*</span></label>
+  <input id="FDOT" placeholder="ex: 2524 (semana 25 de 2024)" maxlength="10"/>
+  <div class="dot-tip"><b>Como ler:</b> últimos 4 dígitos = semana + ano. Ex: <b>2524</b> = semana 25 de 2024</div></div>`;
+const camposMarcaMedida=`<div class="frow"><div class="field"><label>Marca<span class="req">*</span></label><select id="FMR">${oM()}</select></div>
+  <div class="field"><label>Medida<span class="req">*</span></label><select id="FMD">${oMd()}</select></div></div>`;
+const campoModelo=`<div class="field"><label>Modelo<span class="req">*</span></label><input id="FMO" placeholder="ex: V-Steel, G316"/></div>`;
+const campoSulco=(req=false)=>`<div class="field"><label>Sulco (mm)${req?'<span class="req">*</span>':''}</label><input type="number" id="FSL" placeholder="ex: 16.5" step="0.1"/></div>`;
+const campoFoto=`<div class="field"><label>📷 Foto<span class="req">*</span></label>
+  <div id="FWRAP"><div class="foto-area" onclick="sc('FI').click()">
+    <input type="file" id="FI" accept="image/*" capture="environment" onchange="prevFoto(this)"/>
+    <span class="fi">📷</span><div class="ft">Tirar foto</div><div class="fs2">Obrigatório</div>
+  </div></div>
+  <div class="foto-req" id="FREQ">⚠️ Foto obrigatória</div></div>`;
+const campoObs=`<div class="field"><label>Observações</label><textarea id="FOBS" placeholder="Observações..."></textarea></div>`;
+const campoEquip=`<div class="field"><label>Equipamento<span class="req">*</span></label><select id="FEQ">${oE()}</select></div>`;
+const campoPosicao=`<div class="field"><label>Posição<span class="req">*</span></label><select id="FPOS">${oP()}</select></div>`;
+const campoHorim=`<div class="field"><label>Horímetro<span class="req">*</span></label><input type="number" id="FH" placeholder="ex: 11800" step="0.1"/></div>`;
+const campoData=`<div class="field"><label>Data<span class="req">*</span></label><input type="date" id="FD" value="${hoje()}" max="${hoje()}"/></div>`;
+
+const CFG={
+  'pneu-novo':{t:'📦 Pneu Novo',s:'Entrada compra / nota fiscal'},
+  'retorno-recap':{t:'♻️ Retorno Recapagem',s:'Pneu recapado pronto p/ uso'},
+  'transf-entrada':{t:'🚛 Transferência Entrada',s:'Pneu recebido de outra obra'},
+  'transf-saida':{t:'📤 Transferência Saída',s:'Pneu enviado para outra obra'},
+  'cad-montado':{t:'🔩 Cadastrar Montado',s:'Pneu já instalado no equipamento'},
+  'montagem':{t:'⬆️ Montagem',s:'Instalar pneu do estoque'},
+  'remocao':{t:'⬇️ Remoção',s:'Retirar pneu do equipamento'},
+  'rodizio':{t:'🔄 Rodízio',s:'Trocar posição / equipamento'},
+  'recapagem':{t:'♻️ Envio Recapagem',s:'Remover e enviar para recapar'},
+  'sulco':{t:'📏 Medição de Sulco',s:'Registrar profundidade (mm)'},
+  'descarte':{t:'🗑️ Descarte',s:'Pneu inutilizado'},
+  'falha':{t:'🚨 Registrar Falha',s:'Estouro · corte · desgaste irregular'},
+};
+
+function form(op){
+  OP=op;FOTO=null;
+  const cfg=CFG[op]||{t:op,s:''};
+  const c=COR[U.cargo]||'az';
+  sc('FHDR').className=`fhdr ${c}`;
+  sc('FTIT').textContent=cfg.t;
+  sc('FSUB').textContent=cfg.s;
+  sc('SBTN').className=`sbtn ${c}`;
+  sc('FBODY').innerHTML=geraForm(op);
+  show('sf');
+}
+
+function geraForm(op){
+  const h=hoje();
+  if(op==='pneu-novo') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${campoFogo}${camposMarcaMedida}${campoModelo}${campoDOT}${campoSulco()}</div>
+    <div class="fsec"><h3>🧾 Fiscal</h3>
+      <div class="field"><label>Nota fiscal<span class="req">*</span></label><input id="FNF" placeholder="ex: NF-001234"/></div>
+      <div class="field"><label>Fornecedor<span class="req">*</span></label><input id="FFOR" placeholder="Nome da empresa"/></div>
+      <div class="frow">
+        <div class="field"><label>Valor unit. R$<span class="req">*</span></label><input type="number" id="FVL" placeholder="4200" step="0.01"/></div>
+        <div class="field"><label>Qtd.<span class="req">*</span></label><input type="number" id="FQTD" value="1" min="1"/></div>
+      </div>
+      ${campoData}
+      <div class="field"><label>Vida útil esperada (h)</label><input type="number" id="FVIDA" value="3500"/></div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='retorno-recap') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${campoFogo}${camposMarcaMedida}${campoModelo}</div>
+    <div class="fsec"><h3>♻️ Recapagem</h3>
+      <div class="field"><label>Fornecedor recapadeira<span class="req">*</span></label><input id="FFOR" placeholder="Nome da empresa"/></div>
+      <div class="frow">
+        <div class="field"><label>Valor R$<span class="req">*</span></label><input type="number" id="FVL" placeholder="2800" step="0.01"/></div>
+        <div class="field">${campoData.replace('id="FD"','id="FD"')}</div>
+      </div>
+      ${campoSulco(true)}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='transf-entrada') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${campoFogo}${camposMarcaMedida}${campoModelo}${campoDOT}${campoSulco()}</div>
+    <div class="fsec"><h3>🚛 Origem</h3>
+      <div class="field"><label>Obra de origem<span class="req">*</span></label><input id="FORI" placeholder="ex: Obra Rio Verde Km 240"/></div>
+      ${campoData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='transf-saida') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>📤 Destino</h3>
+      <div class="field"><label>Obra destino<span class="req">*</span></label><input id="FDST" placeholder="ex: Obra Chapecó Km 80"/></div>
+      ${campoData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='cad-montado') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${campoFogo}${camposMarcaMedida}${campoModelo}${campoDOT}${campoSulco(true)}</div>
+    <div class="fsec"><h3>🚜 Equipamento</h3>${campoEquip}${campoPosicao}${campoHorim}</div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='montagem') return `
+    <div class="fsec"><h3>🛞 Pneu do estoque</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn('Estoque')}</select></div>
+      ${campoSulco(true)}
+    </div>
+    <div class="fsec"><h3>🚜 Destino</h3>${campoEquip}${campoPosicao}${campoHorim}${campoData}</div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='remocao'||op==='recapagem'||op==='descarte') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>🚜 Equipamento</h3>${campoEquip}${campoPosicao}
+      <div class="field"><label>Horímetro retirada<span class="req">*</span></label><input type="number" id="FH" placeholder="ex: 12100" step="0.1"/></div>
+      ${campoSulco()}${campoData}
+    </div>
+    ${op==='recapagem'?`<div class="fsec"><h3>♻️ Recapagem</h3>
+      <div class="field"><label>Fornecedor</label><input id="FFOR" placeholder="Recapadeira"/></div>
+      <div class="field"><label>Valor estimado R$</label><input type="number" id="FVL" step="0.01"/></div></div>`:''}
+    ${op==='descarte'?`<div class="fsec"><h3>🗑️ Motivo</h3>
+      <div class="field"><label>Motivo<span class="req">*</span></label><select id="FMOT">
+        <option value="">Selecione</option>
+        <option>Fim de vida útil</option><option>Falha prematura</option>
+        <option>Dano irreparável</option><option>Sulco mínimo atingido</option>
+      </select></div></div>`:''}
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='rodizio') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>📤 Origem</h3>${campoEquip}${campoPosicao}${campoHorim}</div>
+    <div class="fsec"><h3>📥 Destino</h3>
+      <div class="field"><label>Equip. destino<span class="req">*</span></label><select id="FEQ2">${oE()}</select></div>
+      <div class="field"><label>Posição destino<span class="req">*</span></label><select id="FPOS2">${oP()}</select></div>
+      ${campoData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${campoObs}</div>`;
+
+  if(op==='sulco') return `
+    <div class="fsec"><h3>🚜 Equipamento</h3>${campoEquip}${campoHorim}${campoData}</div>
+    <div class="fsec"><h3>📏 Medições (mm)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem;" id="SGRID">
+        ${POS.slice(0,8).map(p=>`
+          <div style="background:var(--bg);border:1.5px solid var(--bd);border-radius:.45rem;padding:.48rem .4rem;text-align:center;">
+            <div style="font-size:.58rem;font-weight:700;color:var(--tx2);margin-bottom:.28rem;text-transform:uppercase;">${p.replace('Dianteiro ','Diant.')}</div>
+            <input type="number" class="SI" data-pos="${p}" placeholder="mm" step="0.1" min="0" max="30"
+              style="width:100%;border:1px solid var(--bd);padding:.35rem;border-radius:.3rem;font-size:.84rem;text-align:center;background:#fff;font-family:ui-monospace,monospace;"/>
+          </div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:.55rem;"><label>Outros (fogo + mm)</label>
+        <textarea id="FOBS" placeholder="ex: Fogo 2025-008 pos.Trs.ext.E2°: 11.5mm..."></textarea></div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${campoFoto}</div>`;
+
+  if(op==='falha') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>🚜 Equipamento</h3>${campoEquip}${campoPosicao}${campoHorim}</div>
+    <div class="fsec"><h3>🚨 Falha</h3>
+      <div class="field"><label>Tipo<span class="req">*</span></label><select id="FTIFO">
+        <option value="">Selecione</option>${TFALHA.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div class="field"><label>Causa<span class="req">*</span></label><select id="FCAU">
+        <option value="">Selecione</option>${CAUSAS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="frow">
+        <div class="field"><label>Horas até falha</label><input type="number" id="FHF" step="1"/></div>
+        <div class="field"><label>Custo est. R$</label><input type="number" id="FCV" step="0.01"/></div>
+      </div>
+      ${campoData}
+    </div>
+    <div class="fsec"><h3>📷 Foto<span class="req">*</span></h3>${campoFoto}</div>
+    <div class="fsec"><h3>📝 Descrição</h3>${campoObs}</div>`;
+
+  return '<div class="fsec"><h3>Em construção</h3></div>';
+}
+
+// FOTO
+function prevFoto(inp){
+  const f=inp.files[0];if(!f)return;FOTO=f;
+  const url=URL.createObjectURL(f);
+  sc('FWRAP').innerHTML=`<div class="foto-prev"><img src="${url}"/><button class="frm" onclick="rmFoto()">✕</button></div>`;
+  const r=sc('FREQ');if(r)r.style.display='none';
+}
+function rmFoto(){
+  FOTO=null;
+  sc('FWRAP').innerHTML=`<div class="foto-area" onclick="sc('FI').click()">
+    <input type="file" id="FI" accept="image/*" capture="environment" onchange="prevFoto(this)"/>
+    <span class="fi">📷</span><div class="ft">Tirar foto</div><div class="fs2">Obrigatório</div></div>`;
+}
+
+function voltar(){show('sh');stats();}
+
+// SALVAR
+async function salvar(){
+  const btn=sc('SBTN');btn.disabled=true;
+  try{
+    if(!FOTO){sc('FREQ').style.display='block';toast('⚠️ Foto obrigatória');btn.disabled=false;return;}
+    load(true,'Enviando foto...');
+    const ext=FOTO.name.split('.').pop()||'jpg';
+    const fotoUrl=await upload(FOTO,`${OP}/${U.id}_${Date.now()}.${ext}`);
+    load(true,'Salvando...');
+    let res={};
+
+    if(OP==='pneu-novo'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),mo=vl('FMO'),dt=vl('FDOT');
+      const nf=vl('FNF'),fo=vl('FFOR'),vl2=vl('FVL'),da=vl('FD');
+      if(!fg||!mr||!md||!mo||!dt||!nf||!fo||!vl2||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const qtd=parseInt(vl('FQTD')||1);
+      const regs=[];
+      for(let i=0;i<qtd;i++){
+        regs.push({numero_fogo:qtd>1?`${fg}-${String(i+1).padStart(2,'0')}`:fg,
+          marca:mr,modelo:mo,medida:md,dot:dt,nota_fiscal:nf,fornecedor:fo,
+          valor_compra:parseFloat(vl2),data_compra:da,
+          sulco_original:parseFloat(vl('FSL')||17),
+          vida_esperada_h:parseInt(vl('FVIDA')||3500),
+          status:'Estoque',tipo_entrada:'Compra',
+          foto_url:fotoUrl,observacoes:vl('FOBS')});
+      }
+      await api('pneus','','POST',qtd===1?regs[0]:regs);
+      res={op:'Pneu Novo',fogo:qtd>1?`${fg}-01…${String(qtd).padStart(2,'0')}`:fg,marca:`${mr} ${md}`,nf,valor:`R$ ${parseFloat(vl2).toLocaleString('pt-BR',{minimumFractionDigits:2})}`};
+    }
+
+    else if(OP==='retorno-recap'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),fo=vl('FFOR'),v=vl('FVL'),da=vl('FD'),sl=vl('FSL');
+      if(!fg||!mr||!md||!fo||!v||!da||!sl){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('pneus','','POST',{numero_fogo:fg,marca:mr,modelo:vl('FMO'),medida:md,
+        valor_compra:parseFloat(v),data_compra:da,sulco_original:parseFloat(sl),
+        status:'Estoque',tipo_entrada:'Recapagem',fornecedor:fo,foto_url:fotoUrl,observacoes:vl('FOBS')});
+      res={op:'Retorno Recapagem',fogo:fg,marca:`${mr} ${md}`,sulco:`${sl}mm`,valor:`R$ ${parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2})}`};
+    }
+
+    else if(OP==='transf-entrada'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),mo=vl('FMO'),dt=vl('FDOT'),ori=vl('FORI'),da=vl('FD');
+      if(!fg||!mr||!md||!dt||!ori||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('pneus','','POST',{numero_fogo:fg,marca:mr,modelo:mo,medida:md,dot:dt,
+        sulco_original:parseFloat(vl('FSL')||0)||null,data_compra:da,
+        status:'Estoque',tipo_entrada:'Transferência',foto_url:fotoUrl,observacoes:`Origem: ${ori}`});
+      res={op:'Transf. Entrada',fogo:fg,origem:ori};
+    }
+
+    else if(OP==='transf-saida'){
+      const pn=vl('FPN'),ds=vl('FDST'),da=vl('FD');
+      if(!pn||!ds||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Descarte',
+        status_final:'Transferido',responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,
+        obs_campo:`Transferência para: ${ds}. ${vl('FOBS')}`});
+      res={op:'Transf. Saída',fogo:ps?.numero_fogo||`#${pn}`,destino:ds};
+    }
+
+    else if(OP==='cad-montado'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),mo=vl('FMO'),dt=vl('FDOT');
+      const sl=vl('FSL'),eq=vl('FEQ'),pos=vl('FPOS'),h=vl('FH');
+      if(!fg||!mr||!md||!mo||!dt||!sl||!eq||!pos||!h){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const pr=await api('pneus','','POST',{numero_fogo:fg,marca:mr,modelo:mo,medida:md,dot:dt,
+        sulco_original:parseFloat(sl),status:'Em uso',tipo_entrada:'Cadastro campo',foto_url:fotoUrl,observacoes:vl('FOBS')});
+      const pd=Array.isArray(pr)?pr[0]:pr;
+      await api('movimentacoes','','POST',{data:hoje(),pneu_id:pd?.id,tipo:'Montagem',
+        cod_equipamento:eq,posicao:pos,horimetro_mont:parseFloat(h),status_final:'Em uso',
+        responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl});
+      res={op:'Cadastro Montado',fogo:fg,equip:eq,posicao:pos,sulco:`${sl}mm`,horim:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='montagem'){
+      const pn=vl('FPN'),sl=vl('FSL'),eq=vl('FEQ'),pos=vl('FPOS'),h=vl('FH'),da=vl('FD');
+      if(!pn||!sl||!eq||!pos||!h||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Montagem',
+        cod_equipamento:eq,posicao:pos,horimetro_mont:parseFloat(h),status_final:'Em uso',
+        responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={op:'Montagem',fogo:ps?.numero_fogo||`#${pn}`,equip:eq,posicao:pos,horim:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='remocao'||OP==='recapagem'||OP==='descarte'){
+      const pn=vl('FPN'),eq=vl('FEQ'),pos=vl('FPOS'),h=vl('FH'),da=vl('FD');
+      if(!pn||!eq||!pos||!h||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      if(OP==='descarte'&&!vl('FMOT')){toast('Informe o motivo do descarte');load(false);btn.disabled=false;return;}
+      const tm={remocao:'Remoção',recapagem:'Recapagem',descarte:'Descarte'};
+      const sm={remocao:'Removido',recapagem:'Recapagem',descarte:'Descartado'};
+      const mv={data:da,pneu_id:parseInt(pn),tipo:tm[OP],cod_equipamento:eq,posicao:pos,
+        horimetro_ret:parseFloat(h),sulco_retirada:parseFloat(vl('FSL')||0)||null,
+        status_final:sm[OP],responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')};
+      if(OP==='recapagem')mv.valor_recapagem=parseFloat(vl('FVL')||0)||null;
+      await api('movimentacoes','','POST',mv);
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={op:tm[OP],fogo:ps?.numero_fogo||`#${pn}`,equip:eq,posicao:pos};
+    }
+
+    else if(OP==='rodizio'){
+      const pn=vl('FPN'),eq=vl('FEQ'),pos=vl('FPOS'),h=vl('FH');
+      const eq2=vl('FEQ2'),pos2=vl('FPOS2'),da=vl('FD');
+      if(!pn||!eq||!pos||!h||!eq2||!pos2||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const trf=`TRF-${Date.now()}`;
+      await api('movimentacoes','','POST',[
+        {data:da,pneu_id:parseInt(pn),tipo:'Remoção',cod_equipamento:eq,posicao:pos,
+          horimetro_ret:parseFloat(h),status_final:'Rodízio',id_transferencia:trf,
+          responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')},
+        {data:da,pneu_id:parseInt(pn),tipo:'Rodízio',cod_equipamento:eq2,posicao:pos2,
+          horimetro_mont:parseFloat(h),status_final:'Em uso',id_transferencia:trf,
+          responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')}
+      ]);
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={op:'Rodízio',fogo:ps?.numero_fogo||`#${pn}`,de:`${eq}·${pos}`,para:`${eq2}·${pos2}`};
+    }
+
+    else if(OP==='sulco'){
+      const eq=vl('FEQ'),h=vl('FH'),da=vl('FD');
+      if(!eq||!h||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const inps=document.querySelectorAll('.SI');
+      const regs=[];
+      inps.forEach(i=>{const mm=parseFloat(i.value);if(mm>0)regs.push({
+        data:da,cod_equipamento:eq,posicao:i.dataset.pos,sulco_medido:mm,
+        sulco_original:17,pct_desgaste:+((1-mm/17)*100).toFixed(2),
+        horimetro:parseFloat(h),responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl,
+        observacoes:vl('FOBS')});});
+      if(!regs.length){toast('Informe pelo menos uma medição');load(false);btn.disabled=false;return;}
+      await api('medicoes_sulco','','POST',regs.length===1?regs[0]:regs);
+      res={op:'Medição Sulco',equip:eq,medições:`${regs.length} posição(ões)`,horim:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='falha'){
+      const pn=vl('FPN'),eq=vl('FEQ'),h=vl('FH'),tf=vl('FTIFO'),ca=vl('FCAU'),da=vl('FD');
+      if(!pn||!eq||!h||!tf||!ca||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const hf=parseFloat(vl('FHF')||0);
+      await api('falhas','','POST',{data:da,pneu_id:parseInt(pn),cod_equipamento:eq,
+        tipo_falha:tf,causa_falha:ca,horas_ate_falha:hf||null,
+        custo_perdido:parseFloat(vl('FCV')||0),prematura:hf>0&&hf<2450,
+        descricao:vl('FOBS'),responsavel:U.nome,usuario_id:U.id,foto_url:fotoUrl});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={op:'Falha Registrada',fogo:ps?.numero_fogo||`#${pn}`,equip:eq,tipo:tf,causa:ca};
+    }
+
+    sc('SDET').innerHTML=Object.entries(res).map(([k,v])=>`<div class="row"><span>${k}</span><b>${v}</b></div>`).join('');
+    load(false);show('ss');
+
+  }catch(e){toast('Erro: '+e.message);load(false);btn.disabled=false;console.error(e);}
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded',async()=>{
+  const s=localStorage.getItem('M1U');
+  if(s){try{U=JSON.parse(s);load(true,'Carregando...');await carregarBase();await stats();home();load(false);}catch(e){localStorage.removeItem('M1U');}}
+  sc('IS').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+});
+</script>
+</body>
+</html>
