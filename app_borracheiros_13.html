@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0d3b8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ControlePneus v13</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --az:#0d3b8a;--az2:#1e56c0;--az3:#e8f0fe;--az4:#c7d7f5;
+  --vd:#15803d;--vd2:#dcfce7;--vd3:#bbf7d0;
+  --lj:#c2410c;--lj2:#ffedd5;--lj3:#fed7aa;
+  --tl:#0e7490;--tl2:#cffafe;--tl3:#a5f3fc;
+  --pu:#6d28d9;--pu2:#7c3aed;--pu3:#ede9fe;
+  --rd:#991b1b;--rd2:#dc2626;--rd3:#fee2e2;--rd4:#fecaca;
+  --am:#a16207;--am2:#fef9c3;
+  --bg:#f0f4f8;--bd:#dde5ef;--card:#fff;
+  --tx:#0b1420;--tx2:#6b7280;--tx3:#374151;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:inherit;outline:none;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.on{display:flex;}
+
+/* ══ LOADING / TOAST ══ */
+.lov{position:fixed;inset:0;background:rgba(8,24,46,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:.85rem;z-index:999;}
+.lov.on{display:flex;}
+.spin{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .75s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.ltxt{color:rgba(255,255,255,.75);font-size:.8rem;font-weight:600;}
+.toast{position:fixed;bottom:calc(1.2rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:.62rem 1.1rem;border-radius:9999px;font-size:.77rem;font-weight:600;z-index:1000;opacity:0;transition:.3s;white-space:nowrap;max-width:92vw;text-align:center;}
+.toast.on{opacity:1;}
+
+/* ══ LOGIN ══ */
+#sl{background:linear-gradient(160deg,#040d1f 0%,var(--az) 60%,#1e3a6e 100%);align-items:center;justify-content:center;padding:1.5rem;}
+.lbox{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:1.2rem;padding:2rem 1.75rem;width:100%;max-width:360px;}
+.llogo{text-align:center;margin-bottom:1.5rem;}
+.llogo span{font-size:2.8rem;display:block;}
+.llogo h1{color:#fff;font-size:1.15rem;font-weight:900;margin-top:.4rem;}
+.llogo small{color:rgba(255,255,255,.45);font-size:.7rem;}
+
+/* Setor selector */
+.setor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.1rem;}
+.sb{border:1.5px solid rgba(255,255,255,.2);border-radius:.6rem;padding:.6rem .3rem;text-align:center;cursor:pointer;background:rgba(255,255,255,.07);transition:.15s;user-select:none;}
+.sb.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5);}
+.sb .si{font-size:1.4rem;display:block;margin-bottom:.25rem;}
+.sb .sl{font-size:.65rem;font-weight:800;color:rgba(255,255,255,.7);}
+.sb.on .sl{color:#fff;}
+
+/* Chips funcionário */
+.func-wrap{margin-bottom:.85rem;display:none;}
+.func-label{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;}
+.chip{padding:.32rem .65rem;border-radius:9999px;font-size:.72rem;font-weight:700;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);cursor:pointer;transition:.15s;}
+.chip.on{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.6);color:#fff;}
+
+.lf{margin-bottom:.85rem;}
+.lf label{display:block;color:rgba(255,255,255,.55);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;}
+.lf input{width:100%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);color:#fff;padding:.7rem .9rem;border-radius:.55rem;font-size:.95rem;}
+.lf input::placeholder{color:rgba(255,255,255,.28);}
+.lf input:focus{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.18);}
+.lbtn{width:100%;background:#fff;color:var(--az);padding:.82rem;border-radius:.6rem;font-size:.95rem;font-weight:900;margin-top:.2rem;}
+.lbtn:active{opacity:.9;}
+.lerr{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);color:#fca5a5;padding:.5rem .8rem;border-radius:.45rem;font-size:.76rem;margin-top:.6rem;display:none;text-align:center;}
+
+/* ══ TOPBAR / HDR ══ */
+.topbar{color:#fff;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.2);padding-top:calc(.85rem + env(safe-area-inset-top));}
+.topbar.az{background:linear-gradient(135deg,#040d1f,var(--az2));}
+.topbar.vd{background:linear-gradient(135deg,#052e16,var(--vd));}
+.topbar.lj{background:linear-gradient(135deg,#3b0f02,var(--lj));}
+.topbar.pu{background:linear-gradient(135deg,#2e1065,var(--pu2));}
+.topbar h2{font-size:.9rem;font-weight:800;}
+.tbr{display:flex;align-items:center;gap:.5rem;}
+.cargo-badge{font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:9999px;background:rgba(255,255,255,.2);}
+.sair{background:rgba(255,255,255,.15);color:#fff;padding:.3rem .6rem;border-radius:.38rem;font-size:.7rem;font-weight:700;}
+
+/* ══ HOME ══ */
+.hdr{color:#fff;padding:1rem 1rem .85rem;}
+.hdr.az{background:linear-gradient(135deg,#040d1f,var(--az2) 70%);}
+.hdr.vd{background:linear-gradient(135deg,#052e16,var(--vd) 70%);}
+.hdr.lj{background:linear-gradient(135deg,#3b0f02,var(--lj) 70%);}
+.hdr.pu{background:linear-gradient(135deg,#2e1065,var(--pu2) 70%);}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.hdr-name{font-size:.92rem;font-weight:800;}
+.hdr-sub{font-size:.68rem;color:rgba(255,255,255,.55);margin-top:.1rem;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.75rem;}
+.stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:.5rem;padding:.5rem .4rem;text-align:center;}
+.stat .v{font-size:1.2rem;font-weight:800;color:#fff;}
+.stat .l{font-size:.56rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em;margin-top:.05rem;}
+
+/* Seletor funcionário no home */
+.func-home{margin:.75rem 1rem 0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:.55rem;padding:.65rem .85rem;}
+.func-home .fl{font-size:.62rem;font-weight:800;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+.func-home .chips .chip{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);}
+.func-home .chips .chip.on{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.55);color:#fff;}
+
+.sec{font-size:.65rem;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;padding:.75rem 1rem .3rem;}
+.ops{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;padding:0 .9rem .9rem;}
+.op{background:var(--card);border:1px solid var(--bd);border-radius:.7rem;padding:.85rem .7rem;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:var(--sh);position:relative;overflow:hidden;cursor:pointer;}
+.op:active{transform:scale(.96);}
+.op::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.op.az::before{background:var(--az2);}
+.op.vd::before{background:var(--vd);}
+.op.lj::before{background:var(--lj);}
+.op.tl::before{background:var(--tl);}
+.op.vm::before{background:#b91c1c;}
+.op.gy::before{background:#6b7280;}
+.op.am::before{background:var(--am);}
+.op.pu::before{background:var(--pu2);}
+.op .ico{font-size:1.75rem;margin-bottom:.35rem;}
+.op .lb{font-size:.78rem;font-weight:700;}
+.op .ds{font-size:.62rem;color:var(--tx2);margin-top:.1rem;}
+.op.full{grid-column:1/-1;}
+
+/* ══ FORM ══ */
+#sf{flex-direction:column;}
+.fhdr{color:#fff;padding:1rem;display:flex;align-items:center;gap:.7rem;padding-top:calc(1rem + env(safe-area-inset-top));}
+.fhdr.az{background:linear-gradient(135deg,#040d1f,var(--az2));}
+.fhdr.vd{background:linear-gradient(135deg,#052e16,var(--vd));}
+.fhdr.lj{background:linear-gradient(135deg,#3b0f02,var(--lj));}
+.fhdr.tl{background:linear-gradient(135deg,#042f2e,var(--tl));}
+.fhdr.pu{background:linear-gradient(135deg,#2e1065,var(--pu2));}
+.fhdr.rd{background:linear-gradient(135deg,#450a0a,var(--rd2));}
+.fhdr.am{background:linear-gradient(135deg,#3f2c00,var(--am));}
+.bk{background:rgba(255,255,255,.15);color:#fff;padding:.4rem .68rem;border-radius:.4rem;font-size:.78rem;font-weight:700;}
+.fhi{flex:1;}
+.fhi h2{font-size:.88rem;font-weight:800;}
+.fhi .fs{font-size:.65rem;color:rgba(255,255,255,.55);margin-top:.07rem;}
+
+/* Data automática */
+.data-auto{display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;font-size:.72rem;font-weight:700;margin:.1rem .85rem .05rem;border-radius:.45rem;}
+.data-auto.az{background:var(--az3);color:var(--az2);}
+.data-auto.vd{background:var(--vd2);color:var(--vd);}
+.data-auto.lj{background:var(--lj2);color:var(--lj);}
+.data-auto.tl{background:var(--tl2);color:var(--tl);}
+.data-auto.pu{background:var(--pu3);color:var(--pu2);}
+.data-auto.rd{background:var(--rd3);color:var(--rd2);}
+.data-auto.am{background:var(--am2);color:var(--am);}
+
+.fbody{flex:1;overflow-y:auto;padding:.65rem .85rem 0;}
+.fsec{background:var(--card);border:1px solid var(--bd);border-radius:.7rem;padding:.85rem;margin-bottom:.6rem;box-shadow:var(--sh);}
+.fsec h3{font-size:.65rem;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
+.field{margin-bottom:.72rem;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:.73rem;font-weight:700;color:var(--tx3);margin-bottom:.28rem;}
+.req{color:var(--rd2);margin-left:.1rem;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--bd);color:var(--tx);padding:.62rem .78rem;border-radius:.5rem;font-size:.88rem;-webkit-appearance:none;appearance:none;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;padding-right:2rem;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--az2);background:#fff;}
+.field textarea{resize:none;height:70px;line-height:1.5;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+.frow .field{margin-bottom:0;}
+.hint{font-size:.65rem;color:var(--tx2);margin-top:.28rem;line-height:1.5;}
+.hint b{color:var(--tx);}
+
+/* Fogo preview */
+.fogo-prev{background:linear-gradient(135deg,#0d3b8a,var(--az2));color:#fff;border-radius:.45rem;padding:.48rem .7rem;margin-top:.3rem;text-align:center;font-family:ui-monospace,monospace;font-size:1rem;font-weight:800;letter-spacing:.1em;display:none;}
+.fogo-prev small{display:block;font-size:.56rem;color:rgba(255,255,255,.55);margin-bottom:.08rem;}
+
+/* Sulco visual */
+.sulco-visual{display:flex;align-items:center;gap:.65rem;margin-top:.35rem;}
+.sulco-bar-wrap{flex:1;height:9px;background:#e5e7eb;border-radius:9999px;overflow:hidden;}
+.sulco-bar{height:100%;border-radius:9999px;transition:.25s;}
+.sulco-labels{display:flex;justify-content:space-between;font-size:.56rem;color:var(--tx2);margin-top:.18rem;}
+.sulco-lbl{font-size:.72rem;font-weight:800;min-width:52px;text-align:right;}
+
+/* Diagrama SVG */
+.diag-legenda{display:flex;gap:.65rem;font-size:.6rem;color:var(--tx2);margin-bottom:.5rem;}
+.diag-legenda i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:.2rem;}
+.leg-l{background:#e5e7eb;border:1.5px solid #9ca3af;}
+.leg-o{background:#fecaca;border:1.5px solid #f87171;}
+.leg-s{border:1.5px solid;}
+.pos-badge{border-radius:.45rem;padding:.48rem .7rem;margin-top:.5rem;font-size:.72rem;font-weight:700;display:none;align-items:center;gap:.4rem;}
+.pos-badge.az{background:var(--az3);color:var(--az2);}
+.pos-badge.vd{background:var(--vd2);color:var(--vd);}
+.pos-badge.pu{background:var(--pu3);color:var(--pu2);}
+
+/* Foto */
+.foto-area{border:2px dashed var(--bd);border-radius:.65rem;padding:1rem;text-align:center;background:var(--bg);cursor:pointer;position:relative;}
+.foto-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.foto-area .fi{font-size:1.6rem;display:block;margin-bottom:.3rem;}
+.foto-area .ft{font-size:.74rem;font-weight:700;color:var(--tx2);}
+.foto-area .fs2{font-size:.62rem;color:#9ca3af;margin-top:.1rem;}
+.foto-prev{border-radius:.65rem;overflow:hidden;position:relative;max-height:180px;}
+.foto-prev img{width:100%;object-fit:cover;display:block;}
+.foto-prev .frm{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.foto-req{font-size:.64rem;color:var(--rd2);font-weight:600;margin-top:.25rem;display:none;}
+
+/* Motivo cards descarte */
+.motivo-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
+.motivo-btn{border:1.5px solid var(--bd);border-radius:.5rem;padding:.55rem .4rem;text-align:center;cursor:pointer;background:var(--bg);transition:.15s;user-select:none;}
+.motivo-btn.on{background:var(--rd3);border-color:var(--rd2);}
+.motivo-btn .mi{font-size:1.2rem;display:block;margin-bottom:.18rem;}
+.motivo-btn .ml{font-size:.65rem;font-weight:700;color:var(--tx3);line-height:1.2;}
+.motivo-btn.on .ml{color:var(--rd);}
+
+/* Footer form */
+.ffooter{padding:.85rem;background:#fff;border-top:1px solid var(--bd);padding-bottom:calc(.85rem + env(safe-area-inset-bottom));}
+.sbtn{width:100%;color:#fff;padding:.82rem;border-radius:.6rem;font-size:.95rem;font-weight:900;display:flex;align-items:center;justify-content:center;gap:.45rem;}
+.sbtn.az{background:var(--az2);}
+.sbtn.vd{background:var(--vd);}
+.sbtn.lj{background:var(--lj);}
+.sbtn.tl{background:var(--tl);}
+.sbtn.pu{background:var(--pu2);}
+.sbtn.rd{background:var(--rd2);}
+.sbtn.am{background:var(--am);}
+.sbtn:active{opacity:.88;}
+.sbtn:disabled{background:#9ca3af;}
+
+/* ══ SUCESSO ══ */
+#ss{align-items:center;justify-content:center;text-align:center;padding:2rem;}
+#ss.az{background:linear-gradient(135deg,#040d1f,var(--az2));}
+#ss.vd{background:linear-gradient(135deg,#052e16,var(--vd));}
+#ss.lj{background:linear-gradient(135deg,#3b0f02,var(--lj));}
+#ss.tl{background:linear-gradient(135deg,#042f2e,var(--tl));}
+#ss.pu{background:linear-gradient(135deg,#2e1065,var(--pu2));}
+#ss.rd{background:linear-gradient(135deg,#450a0a,var(--rd2));}
+#ss.am{background:linear-gradient(135deg,#3f2c00,var(--am));}
+.sico{font-size:4.5rem;animation:pop .4s ease;margin-bottom:.85rem;}
+@keyframes pop{0%{transform:scale(.4);}70%{transform:scale(1.1);}100%{transform:scale(1);}}
+.stit{color:#fff;font-size:1.35rem;font-weight:900;margin-bottom:.35rem;}
+.ssub{color:rgba(255,255,255,.6);font-size:.8rem;}
+.sdet{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:.65rem;padding:.85rem 1rem;margin:1.2rem 0;text-align:left;width:100%;max-width:340px;}
+.sdet .row{display:flex;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(255,255,255,.75);}
+.sdet .row:last-child{border:none;}
+.sdet .row b{color:#fff;font-family:ui-monospace,monospace;}
+.nbtn{background:#fff;padding:.78rem 2rem;border-radius:.6rem;font-size:.9rem;font-weight:900;margin-top:.4rem;}
+.nbtn.az{color:var(--az2);}
+.nbtn.vd{color:var(--vd);}
+.nbtn.lj{color:var(--lj);}
+.nbtn.tl{color:var(--tl);}
+.nbtn.pu{color:var(--pu2);}
+.nbtn.rd{color:var(--rd2);}
+.nbtn.am{color:var(--am);}
+</style>
+</head>
+<body>
+<div class="lov" id="LOV"><div class="spin"></div><div class="ltxt" id="LTXT">Aguarde...</div></div>
+<div class="toast" id="TOAST"></div>
+
+<!-- ══ LOGIN ══ -->
+<div class="screen on" id="sl">
+<div class="lbox">
+  <div class="llogo"><span>🛞</span><h1>ControlePneus</h1><small>Obra de Duplicação · v13</small></div>
+
+  <div class="setor-grid">
+    <div class="sb on" id="SB_ENG" onclick="selSetor('eng',this)"><span class="si">👷</span><div class="sl">Engenheiro</div></div>
+    <div class="sb" id="SB_ALM" onclick="selSetor('alm',this)"><span class="si">📦</span><div class="sl">Almoxarifado</div></div>
+    <div class="sb" id="SB_BOR" onclick="selSetor('bor',this)"><span class="si">🔧</span><div class="sl">Borracharia</div></div>
+  </div>
+
+  <div class="func-wrap" id="FUNC_WRAP">
+    <div class="func-label">Quem está fazendo o apontamento?</div>
+    <div class="chips" id="FUNC_CHIPS_LOGIN"></div>
+  </div>
+
+  <div class="lf"><label id="SENHA_LBL">Senha do engenheiro</label><input id="IS" type="password" placeholder="••••••••"/></div>
+  <button class="lbtn" id="LBTN" onclick="login()">🔐 ENTRAR</button>
+  <div class="lerr" id="LERR">Login ou senha incorretos.</div>
+</div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="screen" id="sh">
+  <div class="hdr" id="HDR">
+    <div class="hdr-top">
+      <div><div class="hdr-name" id="HN"></div><div class="hdr-sub" id="HD"></div></div>
+      <button class="sair" onclick="sair()">Sair</button>
+    </div>
+    <!-- Seletor funcionário no campo (almox/borr) -->
+    <div class="func-home" id="FUNC_HOME" style="display:none;">
+      <div class="fl">👤 Quem está fazendo o apontamento?</div>
+      <div class="chips" id="FUNC_CHIPS_HOME"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="SH">—</div><div class="l">Hoje</div></div>
+      <div class="stat"><div class="v" id="SS">—</div><div class="l">Semana</div></div>
+      <div class="stat"><div class="v" id="ST">—</div><div class="l">Total</div></div>
+    </div>
+  </div>
+  <div class="sec" id="HSEC">Operações</div>
+  <div class="ops" id="OPS"></div>
+</div>
+
+<!-- ══ FORM ══ -->
+<div class="screen" id="sf">
+  <div class="fhdr" id="FHDR">
+    <button class="bk" onclick="voltar()">← Voltar</button>
+    <div class="fhi"><h2 id="FTIT">—</h2><div class="fs" id="FSUB"></div></div>
+  </div>
+  <div class="data-auto" id="DATA_AUTO_BAR"><span>📅 Apontamento</span><span id="DATA_AUTO_VAL"></span></div>
+  <div class="fbody" id="FBODY"></div>
+  <div class="ffooter"><button class="sbtn" id="SBTN" onclick="salvar()"><span>✅</span><span id="STXT">SALVAR</span></button></div>
+</div>
+
+<!-- ══ SUCESSO ══ -->
+<div class="screen" id="ss">
+  <div class="sico">✅</div>
+  <div class="stit">Salvo!</div>
+  <div class="ssub" id="SSUB">Registro enviado ao sistema.</div>
+  <div class="sdet" id="SDET"></div>
+  <button class="nbtn" id="NBTN" onclick="voltar()">➕ Nova operação</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const URL_SB='https://nskhtlravltryiqzczil.supabase.co';
+const KEY_SB='sb_publishable_YWHe6f8puoqhEmkdTOXehA_MZRKC99x';
+const BUCKET='FOTOS%20E%20PNEUS';
+
+let U=null, OP=null, FOTO=null, EQUIPS=[], PNEUS=[], FUNCS=[], FUNCS_ALM=[], FUNCS_BOR=[];
+let SETOR='eng', FUNC_SELECIONADO='', COR_ATUAL='az';
+
+const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const COR_SETOR={Engenheiro:'az',Almoxarife:'lj',Borracheiro:'vd'};
+
+// Listas fixas
+const MARCAS=['Bridgestone','Goodyear','Michelin','Pirelli','Triangle','Continental','Dunlop','BKT','Alliance','Titan','Outro'];
+const MEDIDAS=['17.5-25','23.1-26','18.4-26','295/80R22.5','275/80R22.5','315/80R22.5','12.5/80-18','750/65R26','17.5R25','1200/20','Outra'];
+const TFALHA=['Desgaste irregular','Corte','Perfuração','Estouro','Falha recapagem','Bolha lateral','Separação de banda','Outro'];
+const CAUSAS=['Pressão inadequada','Terreno abrasivo','Objeto cortante','Recapagem defeituosa','Sobrecarga','Velocidade excessiva','Alinhamento','Desgaste natural','Outro'];
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+const sc=id=>document.getElementById(id);
+const vl=id=>{const e=sc(id);return e?e.value.trim():'';}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));sc(id).classList.add('on');window.scrollTo(0,0);}
+function load(s,t='Aguarde...'){sc('LOV').classList[s?'add':'remove']('on');sc('LTXT').textContent=t;}
+function toast(m,d=2800){const t=sc('TOAST');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d);}
+function hoje(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function dataHoraAuto(){const d=new Date();return `${DIAS[d.getDay()].slice(0,3)} ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;}
+
+// ═══════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════
+async function api(tabela,params='',method='GET',body=null){
+  const r=await fetch(`${URL_SB}/rest/v1/${tabela}?${params}`,{
+    method,headers:{'apikey':KEY_SB,'Authorization':`Bearer ${KEY_SB}`,
+    'Content-Type':'application/json','Prefer':'return=representation'},
+    body:body?JSON.stringify(body):undefined
+  });
+  if(!r.ok){const e=await r.text();throw new Error(e);}
+  return method==='GET'?r.json():r;
+}
+async function upload(file,path){
+  const r=await fetch(`${URL_SB}/storage/v1/object/${BUCKET}/${path}`,{
+    method:'POST',headers:{'apikey':KEY_SB,'Authorization':`Bearer ${KEY_SB}`,'Content-Type':file.type,'x-upsert':'true'},body:file});
+  if(!r.ok)throw new Error('Erro no upload');
+  return `${URL_SB}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+// Senhas fixas por setor (hash SHA-256 de '1234')
+const SENHAS={
+  eng:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+  alm:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+  bor:'03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4'
+};
+
+function selSetor(s, btn){
+  SETOR=s;
+  document.querySelectorAll('.sb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const fw=sc('FUNC_WRAP');
+  const sl=sc('SENHA_LBL');
+  if(s==='eng'){fw.style.display='none';sl.textContent='Senha do engenheiro';}
+  else{
+    fw.style.display='block';
+    sl.textContent=`Senha do ${s==='alm'?'almoxarifado':'borracharia'}`;
+    renderChipsLogin(s==='alm'?FUNCS_ALM:FUNCS_BOR);
+  }
+}
+
+function renderChipsLogin(lista){
+  const chips=sc('FUNC_CHIPS_LOGIN');
+  chips.innerHTML=lista.map((f,i)=>
+    `<div class="chip ${i===0?'on':''}" onclick="selChipLogin(this,'${f.nome}')">${f.nome}</div>`
+  ).join('');
+  FUNC_SELECIONADO=lista[0]?.nome||'';
+}
+
+function selChipLogin(el,nome){
+  el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  FUNC_SELECIONADO=nome;
+}
+
+async function login(){
+  const s=sc('IS').value.trim();
+  if(!s){toast('Informe a senha');return;}
+  sc('LBTN').disabled=true;
+  load(true,'Verificando...');
+  try{
+    // Verifica senha por SHA-256
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+    const h=Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+    // Busca usuário pelo setor (cargo)
+    const cargo=SETOR==='eng'?'Engenheiro':SETOR==='alm'?'Almoxarife':'Borracheiro';
+    const users=await api('usuarios',`cargo=eq.${cargo}&ativo=eq.true&select=*`);
+    const u=users?.find(x=>(x.senha_hash&&x.senha_hash===h)||(x.senha_plain&&x.senha_plain===s));
+    if(!u){sc('LERR').style.display='block';load(false);sc('LBTN').disabled=false;return;}
+    sc('LERR').style.display='none';
+    U={...u};
+    // Para almox/borr, usa o funcionário selecionado como responsável
+    if(SETOR!=='eng'&&FUNC_SELECIONADO) U._func=FUNC_SELECIONADO;
+    else U._func=U.nome;
+    localStorage.setItem('M1U',JSON.stringify(U));
+    localStorage.setItem('M1S',SETOR);
+    localStorage.setItem('M1F',FUNC_SELECIONADO||'');
+    await carregarBase();
+    await stats();
+    home();
+    load(false);
+  }catch(e){toast('Erro: '+e.message);load(false);sc('LBTN').disabled=false;}
+}
+
+function sair(){localStorage.removeItem('M1U');U=null;SETOR='eng';show('sl');sc('IS').value='';}
+
+// ═══════════════════════════════════════
+// DADOS BASE
+// ═══════════════════════════════════════
+async function carregarBase(){
+  try{
+    [EQUIPS,PNEUS]=await Promise.all([
+      api('equipamentos','select=cod,tipo,marca_modelo,medida_padrao&status=eq.Ativo&order=cod'),
+      api('pneus','select=id,numero_fogo,marca,medida,status&order=numero_fogo')
+    ]);
+    // Carrega funcionários para chips
+    const todos=await api('usuarios','select=nome,cargo&ativo=eq.true&order=nome');
+    FUNCS_ALM=todos.filter(f=>f.cargo==='Almoxarife');
+    FUNCS_BOR=todos.filter(f=>f.cargo==='Borracheiro');
+    FUNCS=todos;
+  }catch(e){console.error(e);}
+}
+
+async function stats(){
+  if(!U)return;
+  try{
+    const uid=U.id,h=hoje();
+    const sem=new Date();sem.setDate(sem.getDate()-7);const sw=sem.toISOString().slice(0,10);
+    const [ah,as,at]=await Promise.all([
+      api('movimentacoes',`usuario_id=eq.${uid}&created_at=gte.${h}&select=id`),
+      api('movimentacoes',`usuario_id=eq.${uid}&created_at=gte.${sw}&select=id`),
+      api('movimentacoes',`usuario_id=eq.${uid}&select=id`)
+    ]);
+    sc('SH').textContent=ah.length;sc('SS').textContent=as.length;sc('ST').textContent=at.length;
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+function home(){
+  const d=new Date();
+  const c=COR_SETOR[U.cargo]||'az';
+  COR_ATUAL=c;
+  sc('HDR').className=`hdr ${c}`;
+  const func=U._func||U.nome;
+  sc('HN').textContent=`Olá, ${func.split(' ')[0]}! 👋`;
+  sc('HD').textContent=`${DIAS[d.getDay()]}, ${d.toLocaleDateString('pt-BR')} · ${U.cargo}`;
+  sc('SBTN').className=`sbtn ${c}`;
+  sc('NBTN').className=`nbtn ${c}`;
+  sc('ss').className=`screen ${c}`;
+
+  // Chips de funcionário no home (almox/borr)
+  const fh=sc('FUNC_HOME');
+  if(U.cargo!=='Engenheiro'){
+    fh.style.display='block';
+    const lista=U.cargo==='Almoxarife'?FUNCS_ALM:FUNCS_BOR;
+    const chipsEl=sc('FUNC_CHIPS_HOME');
+    chipsEl.innerHTML=lista.map(f=>
+      `<div class="chip ${f.nome===func?'on':''}" onclick="selChipHome(this,'${f.nome}')">${f.nome}</div>`
+    ).join('');
+  }else{fh.style.display='none';}
+
+  renderOps(c);
+  show('sh');
+}
+
+function selChipHome(el,nome){
+  el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  U._func=nome;
+  localStorage.setItem('M1F',nome);
+}
+
+function renderOps(c){
+  const g=sc('OPS'),s=sc('HSEC');
+  const almox=`
+    <div class="op az" onclick="form('pneu-novo')"><div class="ico">📦</div><div class="lb">Pneu Novo</div><div class="ds">Compra / NF</div></div>
+    <div class="op lj" onclick="form('retorno-recap')"><div class="ico">♻️</div><div class="lb">Retorno Recap.</div><div class="ds">Pneu recapado pronto</div></div>
+    <div class="op tl" onclick="form('transf-entrada')"><div class="ico">🚛</div><div class="lb">Transf. Entrada</div><div class="ds">De outra obra</div></div>
+    <div class="op gy" onclick="form('transf-saida')"><div class="ico">📤</div><div class="lb">Transf. Saída</div><div class="ds">Para outra obra</div></div>`;
+  const campo=`
+    <div class="op pu" onclick="form('cad-montado')"><div class="ico">🔩</div><div class="lb">Inventário</div><div class="ds">Pneu já montado</div></div>
+    <div class="op vd" onclick="form('montagem')"><div class="ico">⬆️</div><div class="lb">Montagem</div><div class="ds">Instalar do estoque</div></div>
+    <div class="op gy" onclick="form('remocao')"><div class="ico">⬇️</div><div class="lb">Remoção</div><div class="ds">Retirar do equip.</div></div>
+    <div class="op tl" onclick="form('rodizio')"><div class="ico">🔄</div><div class="lb">Rodízio</div><div class="ds">Trocar posição</div></div>
+    <div class="op lj" onclick="form('recapagem')"><div class="ico">♻️</div><div class="lb">Envio Recap.</div><div class="ds">Mandar recapar</div></div>
+    <div class="op am" onclick="form('sulco')"><div class="ico">📏</div><div class="lb">Sulco</div><div class="ds">Medir (mm)</div></div>
+    <div class="op vm rd" onclick="form('descarte')"><div class="ico">🗑️</div><div class="lb">Descarte</div><div class="ds">Inutilizado</div></div>
+    <div class="op vm full" onclick="form('falha')" style="--c:#b91c1c;"><div class="ico">🚨</div><div class="lb">Registrar Falha</div><div class="ds">Estouro · corte · desgaste irregular</div></div>`;
+  if(U.cargo==='Almoxarife'){s.textContent='Almoxarifado';g.innerHTML=almox;}
+  else if(U.cargo==='Borracheiro'){s.textContent='Campo — registrar';g.innerHTML=campo;}
+  else{s.textContent='Engenheiro — acesso completo';g.innerHTML=almox+campo;}
+}
+
+// ═══════════════════════════════════════
+// HELPERS DO FORM
+// ═══════════════════════════════════════
+const oE=()=>'<option value="">Selecione equipamento</option>'+EQUIPS.map(e=>`<option value="${e.cod}">${e.cod} · ${(e.tipo||'')} · ${e.medida_padrao||''}</option>`).join('');
+const oM=()=>'<option value="">Selecione marca</option>'+MARCAS.map(m=>`<option>${m}</option>`).join('');
+const oMd=()=>'<option value="">Selecione medida</option>'+MEDIDAS.map(m=>`<option>${m}</option>`).join('');
+const oPn=(s=null)=>'<option value="">Selecione pneu (fogo)</option>'+(s?PNEUS.filter(p=>p.status===s):PNEUS).map(p=>`<option value="${p.id}">${p.numero_fogo||'#'+p.id} · ${p.marca||''} ${p.medida||''} (${p.status})</option>`).join('');
+
+const POS_SIMPLES=['Dianteiro Esq.','Dianteiro Dir.','Trs. Esq. 1° eixo','Trs. Dir. 1° eixo','Trs. Esq. 2° eixo','Trs. Dir. 2° eixo'];
+
+// Configuração dos equipamentos e seus diagramas
+const EQUIP_DIAG={
+  'Motoniveladora':{eixos:[
+    {n:'Dianteiro',ps:[{id:'D-E',l:'D\nEsq'},{id:'D-D',l:'D\nDir'}]},
+    {n:'Trs. 1°',ps:[{id:'T1-E',l:'T1\nEsq'},{id:'T1-D',l:'T1\nDir'}]},
+    {n:'Trs. 2°',ps:[{id:'T2-E',l:'T2\nEsq'},{id:'T2-D',l:'T2\nDir'}]},
+  ]},
+  'Caminhão 8x4':{eixos:[
+    {n:'Eixo 1',ps:[{id:'E1-E',l:'E1\nEsq'},{id:'E1-D',l:'E1\nDir'}]},
+    {n:'Eixo 2',ps:[{id:'E2-E',l:'E2\nEsq'},{id:'E2-D',l:'E2\nDir'}]},
+    {n:'Eixo 3',ps:[{id:'E3-EE',l:'E3\nExtE'},{id:'E3-IE',l:'E3\nIntE'},{id:'E3-ID',l:'E3\nIntD'},{id:'E3-ED',l:'E3\nExtD'}]},
+    {n:'Eixo 4',ps:[{id:'E4-EE',l:'E4\nExtE'},{id:'E4-IE',l:'E4\nIntE'},{id:'E4-ID',l:'E4\nIntD'},{id:'E4-ED',l:'E4\nExtD'}]},
+  ]},
+  'Caminhão 6x4':{eixos:[
+    {n:'Eixo 1',ps:[{id:'E1-E',l:'E1\nEsq'},{id:'E1-D',l:'E1\nDir'}]},
+    {n:'Eixo 2',ps:[{id:'E2-EE',l:'E2\nExtE'},{id:'E2-IE',l:'E2\nIntE'},{id:'E2-ID',l:'E2\nIntD'},{id:'E2-ED',l:'E2\nExtD'}]},
+    {n:'Eixo 3',ps:[{id:'E3-EE',l:'E3\nExtE'},{id:'E3-IE',l:'E3\nIntE'},{id:'E3-ID',l:'E3\nIntD'},{id:'E3-ED',l:'E3\nExtD'}]},
+  ]},
+  'Pá Carregadeira':{eixos:[
+    {n:'Dianteiro',ps:[{id:'D-E',l:'D\nEsq'},{id:'D-D',l:'D\nDir'}]},
+    {n:'Traseiro',ps:[{id:'T-E',l:'T\nEsq'},{id:'T-D',l:'T\nDir'}]},
+  ]},
+  'Rolo Compactador':{eixos:[
+    {n:'Dianteiro',ps:[{id:'D-E',l:'D\nEsq'},{id:'D-D',l:'D\nDir'}]},
+    {n:'Traseiro',ps:[{id:'T-E',l:'T\nEsq'},{id:'T-D',l:'T\nDir'}]},
+  ]},
+  'Retroescavadeira':{eixos:[
+    {n:'Dianteiro',ps:[{id:'D-E',l:'D\nEsq'},{id:'D-D',l:'D\nDir'}]},
+    {n:'Traseiro',ps:[{id:'T-E',l:'T\nEsq'},{id:'T-D',l:'T\nDir'}]},
+  ]},
+};
+
+function renderDiagrama(tipo,cor,ocupadas=[]){
+  const cfg=Object.entries(EQUIP_DIAG).find(([k])=>tipo&&tipo.toLowerCase().includes(k.toLowerCase()));
+  if(!cfg)return '<div style="color:var(--tx2);font-size:.72rem;text-align:center;padding:.85rem;">Selecione o equipamento para ver o diagrama</div>';
+  const {eixos}=cfg[1];
+  const PW=52,PH=34,GAP=6,EH=18;
+  const maxP=Math.max(...eixos.map(e=>e.ps.length));
+  const W=maxP*(PW+GAP)+GAP+40,H=eixos.length*(PH+EH+GAP)+GAP+10;
+  let s=[`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:340px;">`];
+  s.push(`<rect x="${W/2-8}" y="0" width="16" height="${H}" rx="4" fill="#e5e7eb"/>`);
+  eixos.forEach((eixo,ei)=>{
+    const Y=ei*(PH+EH+GAP)+GAP,totalW=eixo.ps.length*(PW+GAP)-GAP,startX=(W-totalW)/2;
+    s.push(`<text x="${W/2}" y="${Y+EH-5}" text-anchor="middle" font-size="9" font-weight="700" fill="#6b7280" font-family="system-ui">${eixo.n}</text>`);
+    s.push(`<line x1="${startX}" y1="${Y+EH+PH/2}" x2="${startX+totalW}" y2="${Y+EH+PH/2}" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>`);
+    eixo.ps.forEach((p,pi)=>{
+      const X=startX+pi*(PW+GAP),PY=Y+EH;
+      const ocp=ocupadas.includes(p.id);
+      const fill=ocp?'#fecaca':'#e5e7eb',stroke=ocp?'#f87171':'#9ca3af',tf=ocp?'#b91c1c':'#374151';
+      const lines=p.l.split('\n');
+      s.push(`<g id="pneu_${p.id}" onclick="${ocp?'':` selPos('${p.id}','${p.l.replace(/\n/,' ')}','${cor}')`}" style="cursor:${ocp?'not-allowed':'pointer'}">
+        <rect x="${X}" y="${PY}" width="${PW}" height="${PH}" rx="5" fill="${fill}" stroke="${stroke}" stroke-width="1.5" id="rect_${p.id}"/>
+        <text x="${X+PW/2}" y="${PY+PH/2-3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${tf}" font-family="ui-monospace,monospace" id="t1_${p.id}">${lines[0]||''}</text>
+        <text x="${X+PW/2}" y="${PY+PH/2+8}" text-anchor="middle" font-size="8" font-weight="600" fill="${tf}" font-family="ui-monospace,monospace" id="t2_${p.id}">${lines[1]||''}</text>
+      </g>`);
+    });
+  });
+  s.push('</svg>');
+  const cores={az:['#1e56c0','#2e1065'],vd:['#15803d','#052e16'],pu:['#7c3aed','#2e1065'],lj:['#c2410c','#3b0f02']};
+  const [fill2]=cores[cor]||['#1e56c0','#040d1f'];
+  return `<div class="diag-legenda"><span><i class="leg-l"></i>Livre</span><span><i class="leg-o"></i>Ocupada</span><span><i class="leg-s" style="background:${fill2};border-color:${fill2};"></i>Selecionada</span></div>
+    <div style="display:flex;justify-content:center;">${s.join('')}</div>
+    <div class="pos-badge ${cor}" id="POS_BADGE" style="display:none;">📍 Posição: <b id="POS_NOME">—</b></div>`;
+}
+
+let _posSel='';
+function selPos(id,nome,cor){
+  document.querySelectorAll('[id^="rect_"]').forEach(r=>{
+    if(r.getAttribute('fill')==='#fecaca')return;
+    r.setAttribute('fill','#e5e7eb');r.setAttribute('stroke','#9ca3af');
+    const rid=r.id.replace('rect_','');
+    sc('t1_'+rid)?.setAttribute('fill','#374151');
+    sc('t2_'+rid)?.setAttribute('fill','#374151');
+  });
+  const cores={az:['#1e56c0','#040d1f'],vd:['#15803d','#052e16'],pu:['#7c3aed','#2e1065'],lj:['#c2410c','#3b0f02']};
+  const [fill,stroke]=cores[cor]||['#1e56c0','#040d1f'];
+  sc('rect_'+id)?.setAttribute('fill',fill);
+  sc('rect_'+id)?.setAttribute('stroke',stroke);
+  sc('t1_'+id)?.setAttribute('fill','#fff');
+  sc('t2_'+id)?.setAttribute('fill','#fff');
+  _posSel=nome;
+  const b=sc('POS_BADGE');if(b){b.style.display='flex';sc('POS_NOME').textContent=nome;}
+}
+
+function updEquipDiag(selectId,diagId,cor){
+  const sel=sc(selectId);if(!sel)return;
+  const tipo=sel.options[sel.selectedIndex]?.text||'';
+  const el=sc(diagId);if(el)el.innerHTML=renderDiagrama(tipo,cor);
+  _posSel='';
+}
+
+// Sulco visual
+function updSulco(inpId,barId,lblId){
+  const mm=parseFloat(vl(inpId))||0;
+  const pct=Math.min(100,Math.max(0,(mm/30)*100));
+  const bar=sc(barId),lbl=sc(lblId);
+  let cor='#15803d',ico='✓';
+  if(mm<5){cor='#b91c1c';ico='⚠️';}
+  else if(mm<8){cor='#c2410c';ico='⚡';}
+  if(bar){bar.style.width=pct+'%';bar.style.background=cor;}
+  if(lbl){lbl.style.color=cor;lbl.textContent=mm>0?`${mm}mm ${ico}`:'—';}
+}
+
+// Fogo preview
+function updFogo(inpId,prvId){
+  const v=sc(inpId)?.value.toUpperCase()||'';
+  const p=sc(prvId);
+  if(p){p.style.display=v?'block':'none';p.innerHTML=v?`<small>Nº DE FOGO</small>${v}`:'';}
+}
+
+// Foto
+let _fotoAreaId='FWRAP';
+function prevFoto(inp,wrapId='FWRAP'){
+  const f=inp.files[0];if(!f)return;FOTO=f;_fotoAreaId=wrapId;
+  const url=URL.createObjectURL(f);
+  sc(wrapId).innerHTML=`<div class="foto-prev"><img src="${url}"/><button class="frm" onclick="rmFoto('${wrapId}')">✕</button></div>`;
+  const r=sc('FREQ');if(r)r.style.display='none';
+}
+function rmFoto(wrapId='FWRAP'){
+  FOTO=null;
+  sc(wrapId).innerHTML=`<div class="foto-area" onclick="sc('FI').click()">
+    <input type="file" id="FI" accept="image/*" capture="environment" onchange="prevFoto(this,'${wrapId}')"/>
+    <span class="fi">📷</span><div class="ft">Tirar foto</div><div class="fs2">Opcional</div></div>`;
+}
+
+// Campos reutilizáveis
+const cfFogo=`<div class="field"><label>Número de Fogo<span class="req">*</span></label>
+  <input id="FF" placeholder="ex: 2025-001" oninput="this.value=this.value.toUpperCase();updFogo('FF','FP')" autocapitalize="characters" style="font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.05em;"/>
+  <div class="fogo-prev" id="FP"></div></div>`;
+const cfDOT=`<div class="field"><label>DOT<span class="req">*</span></label>
+  <input id="FDOT" placeholder="ex: 2524" maxlength="10" style="font-family:ui-monospace,monospace;letter-spacing:.08em;"/>
+  <div class="hint"><b>Últimos 4 dígitos:</b> semana + ano de fabricação. Ex: <b>2524</b> = semana 25 de 2024</div></div>`;
+const cfMarcaMedida=`<div class="frow">
+  <div class="field"><label>Marca<span class="req">*</span></label><select id="FMR">${oM()}</select></div>
+  <div class="field"><label>Medida<span class="req">*</span></label><select id="FMD">${oMd()}</select></div></div>`;
+const cfModelo=`<div class="field"><label>Modelo</label><input id="FMO" placeholder="ex: V-Steel, G316"/></div>`;
+const cfSulco=(req=false,id='FSL')=>`<div class="field"><label>Sulco (mm)${req?'<span class="req">*</span>':''}</label>
+  <input type="number" id="${id}" placeholder="ex: 16.5" step="0.5" min="0" max="30" oninput="updSulco('${id}','SB_${id}','SL_${id}')"/>
+  <div class="sulco-visual"><div style="flex:1;"><div class="sulco-bar-wrap"><div class="sulco-bar" id="SB_${id}" style="width:0;background:#15803d;"></div></div>
+  <div class="sulco-labels"><span>0</span><span>crítico 5mm</span><span>30mm</span></div></div>
+  <div class="sulco-lbl" id="SL_${id}">—</div></div></div>`;
+const cfFoto=(obrig=false)=>`<div class="field"><label>📷 Foto${obrig?'<span class="req">*</span>':' (opcional)'}</label>
+  <div id="FWRAP"><div class="foto-area" onclick="sc('FI').click()">
+    <input type="file" id="FI" accept="image/*" capture="environment" onchange="prevFoto(this,'FWRAP')"/>
+    <span class="fi">📷</span><div class="ft">Tirar foto</div><div class="fs2">${obrig?'Obrigatório':'Opcional — recomendada'}</div>
+  </div></div>
+  <div class="foto-req" id="FREQ">⚠️ Foto obrigatória</div></div>`;
+const cfObs=`<div class="field"><label>Observações</label><textarea id="FOBS" placeholder="Observações..."></textarea></div>`;
+const cfEquip=(id='FEQ',onChange='')=>`<div class="field"><label>Equipamento<span class="req">*</span></label><select id="${id}" onchange="${onChange}">${oE()}</select></div>`;
+const cfHorim=(id='FH')=>`<div class="field"><label>Horímetro<span class="req">*</span></label>
+  <input type="number" id="${id}" placeholder="ex: 11800" step="0.1" style="font-family:ui-monospace,monospace;"/></div>`;
+const cfData=`<div class="field"><label>Data<span class="req">*</span></label><input type="date" id="FD" value="${hoje()}" max="${hoje()}"/></div>`;
+
+// ═══════════════════════════════════════
+// FORM
+// ═══════════════════════════════════════
+const CFG={
+  'pneu-novo':{t:'📦 Pneu Novo',s:'Almoxarifado · Entrada de estoque',c:'az'},
+  'retorno-recap':{t:'♻️ Retorno Recapagem',s:'Almoxarifado · Pneu recapado pronto',c:'lj'},
+  'transf-entrada':{t:'🚛 Transferência Entrada',s:'Almoxarifado · Recebimento de outra obra',c:'tl'},
+  'transf-saida':{t:'📤 Transferência Saída',s:'Almoxarifado · Envio para outra obra',c:'gy'},
+  'cad-montado':{t:'🔩 Inventário — Pneu em Uso',s:'Borracheiro · Pneu já instalado',c:'pu'},
+  'montagem':{t:'⬆️ Montagem',s:'Borracheiro · Instalar pneu do estoque',c:'vd'},
+  'remocao':{t:'⬇️ Remoção',s:'Borracheiro · Retirar pneu',c:'gy'},
+  'rodizio':{t:'🔄 Rodízio',s:'Borracheiro · Trocar posição',c:'tl'},
+  'recapagem':{t:'♻️ Envio Recapagem',s:'Borracheiro · Remover e enviar recapar',c:'tl'},
+  'sulco':{t:'📏 Medição de Sulco',s:'Borracheiro · Registrar desgaste',c:'am'},
+  'descarte':{t:'🗑️ Descarte',s:'Borracheiro · Baixar pneu definitivamente',c:'rd'},
+  'falha':{t:'🚨 Registrar Falha',s:'Borracheiro · Estouro · corte · desgaste',c:'rd'},
+};
+
+function form(op){
+  OP=op;FOTO=null;_posSel='';
+  const cfg=CFG[op]||{t:op,s:'',c:'az'};
+  COR_ATUAL=cfg.c||'az';
+  sc('FHDR').className=`fhdr ${COR_ATUAL}`;
+  sc('FTIT').textContent=cfg.t;
+  sc('FSUB').textContent=cfg.s;
+  sc('SBTN').className=`sbtn ${COR_ATUAL}`;
+  sc('DATA_AUTO_BAR').className=`data-auto ${COR_ATUAL}`;
+  sc('DATA_AUTO_VAL').textContent=dataHoraAuto();
+  sc('FBODY').innerHTML=geraForm(op,COR_ATUAL);
+  show('sf');
+}
+
+function geraForm(op,c){
+  if(op==='pneu-novo') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${cfFogo}${cfMarcaMedida}${cfModelo}${cfDOT}${cfSulco(false,'FSL')}</div>
+    <div class="fsec"><h3>🧾 Dados fiscais</h3>
+      <div class="field"><label>Nota fiscal<span class="req">*</span></label><input id="FNF" placeholder="ex: NF-001234"/></div>
+      <div class="field"><label>Fornecedor<span class="req">*</span></label><input id="FFOR" placeholder="Nome da empresa"/></div>
+      <div class="frow">
+        <div class="field"><label>Valor unit. R$<span class="req">*</span></label><input type="number" id="FVL" placeholder="4200" step="0.01"/></div>
+        <div class="field"><label>Qtd.<span class="req">*</span></label><input type="number" id="FQTD" value="1" min="1"/></div>
+      </div>
+      ${cfData}
+      <div class="field"><label>Vida útil esperada (h)</label><input type="number" id="FVIDA" value="3500"/></div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='retorno-recap') return `
+    <div class="fsec"><h3>🛞 Identificação do pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn('Recapagem')}</select></div>
+      ${cfSulco(true,'FSL')}
+    </div>
+    <div class="fsec"><h3>♻️ Dados da recapagem</h3>
+      <div class="field"><label>Recapadeira<span class="req">*</span></label><input id="FFOR" placeholder="Nome da empresa recapadeira"/></div>
+      <div class="frow">
+        <div class="field"><label>Valor R$<span class="req">*</span></label><input type="number" id="FVL" placeholder="2800" step="0.01"/></div>
+        <div class="field"><label>OS / Nº serviço</label><input id="FOS" placeholder="OS-441"/></div>
+      </div>
+      ${cfData}
+      <div class="field"><label>Vida útil esperada (h)</label><input type="number" id="FVIDA" value="2500"/></div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='transf-entrada') return `
+    <div class="fsec"><h3>🔥 Identificação</h3>${cfFogo}${cfMarcaMedida}${cfModelo}${cfDOT}${cfSulco(false,'FSL')}</div>
+    <div class="fsec"><h3>🚛 Origem</h3>
+      <div class="field"><label>Obra de origem<span class="req">*</span></label><input id="FORI" placeholder="ex: Obra Rio Verde Km 240"/></div>
+      ${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='transf-saida') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>📤 Destino</h3>
+      <div class="field"><label>Obra destino<span class="req">*</span></label><input id="FDST" placeholder="ex: Obra Chapecó Km 80"/></div>
+      ${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='cad-montado') return `
+    <div class="fsec"><h3>📋 Aviso</h3>
+      <div style="background:var(--pu3);border:1px solid var(--az4);border-radius:.45rem;padding:.55rem .75rem;font-size:.72rem;color:var(--pu2);font-weight:600;line-height:1.55;">
+        📋 Levantamento de pneus já em uso. Registre sem necessidade de nota fiscal ou valor — apenas informações técnicas para iniciar o controle.
+      </div>
+    </div>
+    <div class="fsec"><h3>🔥 Identificação</h3>${cfFogo}${cfMarcaMedida}${cfModelo}${cfDOT}</div>
+    <div class="fsec"><h3>📏 Condição atual</h3>
+      ${cfSulco(false,'FSLO')}
+      <div style="margin-top:.35rem;font-size:.68rem;color:var(--tx2);">↑ Sulco original &nbsp;·&nbsp; ↓ Sulco atual</div>
+      ${cfSulco(true,'FSL')}
+    </div>
+    <div class="fsec"><h3>🚜 Onde está montado?</h3>
+      ${cfEquip('FEQ',`updEquipDiag('FEQ','DIAG_WRAP','${c}')`)}
+      <div id="DIAG_WRAP">${renderDiagrama('','pu')}</div>
+      ${cfHorim('FH')}
+    </div>
+    <div class="fsec"><h3>♻️ Histórico</h3>
+      <div class="field"><label>Este pneu é</label>
+        <select id="FORIG"><option value="novo">Novo (nunca recapado)</option><option value="recap1">Recapado 1ª vez</option><option value="recap2">Recapado 2ª vez</option><option value="recap3">Recapado 3× ou mais</option><option value="nao_sei">Não sei informar</option></select>
+      </div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='montagem') return `
+    <div class="fsec"><h3>🛞 Qual pneu vai montar?</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn('Estoque')}</select></div>
+      ${cfSulco(true,'FSL')}
+    </div>
+    <div class="fsec"><h3>🚜 Em qual equipamento?</h3>
+      ${cfEquip('FEQ',`updEquipDiag('FEQ','DIAG_WRAP','${c}')`)}
+      <div id="DIAG_WRAP">${renderDiagrama('','vd')}</div>
+      ${cfHorim('FH')}${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='remocao') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>🚜 Equipamento</h3>
+      ${cfEquip('FEQ','')}{${cfHorim('FH')}${cfSulco(false,'FSL')}${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='recapagem') return `
+    <div class="fsec"><h3>🛞 Qual pneu vai sair?</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn('Em uso')}</select></div>
+      ${cfSulco(false,'FSL')}
+    </div>
+    <div class="fsec"><h3>🚜 Equipamento de retirada</h3>
+      ${cfEquip('FEQ','')}${cfHorim('FH')}${cfData}
+    </div>
+    <div class="fsec"><h3>🏭 Destino</h3>
+      <div class="field"><label>Recapadeira<span class="req">*</span></label><input id="FFOR" placeholder="Nome da empresa recapadeira"/></div>
+      <div class="frow">
+        <div class="field"><label>Valor estimado R$</label><input type="number" id="FVL" step="0.01"/></div>
+        <div class="field"><label>Previsão retorno</label><input type="date" id="FPREV"/></div>
+      </div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='rodizio') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>📤 Origem (posição atual)</h3>${cfEquip('FEQ','')}${cfHorim('FH')}</div>
+    <div class="fsec"><h3>📥 Destino (nova posição)</h3>
+      ${cfEquip('FEQ2',`updEquipDiag('FEQ2','DIAG_WRAP','${c}')`)}
+      <div id="DIAG_WRAP">${renderDiagrama('','tl')}</div>
+      ${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='sulco') return `
+    <div class="fsec"><h3>🚜 Equipamento</h3>${cfEquip('FEQ','')}${cfHorim('FH')}${cfData}</div>
+    <div class="fsec"><h3>📏 Medições por posição (mm)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;" id="SGRID">
+        ${['Diant.Esq','Diant.Dir','T1 Esq','T1 Dir','T2 Esq','T2 Dir','Ext.E3','Int.E3','Int.D3','Ext.D3','Ext.E4','Int.E4'].map(p=>`
+          <div style="background:var(--bg);border:1.5px solid var(--bd);border-radius:.45rem;padding:.45rem .4rem;text-align:center;">
+            <div style="font-size:.58rem;font-weight:700;color:var(--tx2);margin-bottom:.25rem;">${p}</div>
+            <input type="number" class="SI" data-pos="${p}" placeholder="mm" step="0.1" min="0" max="30"
+              style="width:100%;border:1px solid var(--bd);padding:.3rem;border-radius:.3rem;font-size:.84rem;text-align:center;background:#fff;font-family:ui-monospace,monospace;"/>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="fsec"><h3>📷 Foto</h3>${cfFoto(false)}</div>
+    <div class="fsec"><h3>📝 Obs.</h3>${cfObs}</div>`;
+
+  if(op==='descarte') return `
+    <div class="fsec"><h3>🛞 Qual pneu será descartado?</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+      ${cfSulco(true,'FSL')}
+    </div>
+    <div class="fsec"><h3>❓ Motivo<span class="req">*</span></h3>
+      <div class="motivo-grid">
+        <div class="motivo-btn on" onclick="selMotivo(this,'Fim de vida útil')"><span class="mi">📉</span><div class="ml">Fim de vida útil</div></div>
+        <div class="motivo-btn" onclick="selMotivo(this,'Estouro / Furo')"><span class="mi">💥</span><div class="ml">Estouro / Furo</div></div>
+        <div class="motivo-btn" onclick="selMotivo(this,'Dano lateral / corte')"><span class="mi">✂️</span><div class="ml">Dano lateral</div></div>
+        <div class="motivo-btn" onclick="selMotivo(this,'Desgaste irregular')"><span class="mi">⚠️</span><div class="ml">Desgaste irregular</div></div>
+        <div class="motivo-btn" onclick="selMotivo(this,'Separação de carcaça')"><span class="mi">🔓</span><div class="ml">Separação carcaça</div></div>
+        <div class="motivo-btn" onclick="selMotivo(this,'Outro')"><span class="mi">📝</span><div class="ml">Outro</div></div>
+      </div>
+      <input type="hidden" id="FMOT" value="Fim de vida útil"/>
+    </div>
+    <div class="fsec"><h3>📋 Complemento</h3>
+      ${cfEquip('FEQ','')}${cfHorim('FH')}
+      <div class="field"><label>Destino</label>
+        <select id="FDST2"><option>Sucata / descarte final</option><option>Devolvido ao fornecedor</option><option>Enviado para análise (garantia)</option></select>
+      </div>
+      ${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto<span class="req">*</span></h3>${cfFoto(true)}</div>
+    <div class="fsec"><h3>📝 Descrição do problema<span class="req">*</span></h3>${cfObs}</div>`;
+
+  if(op==='falha') return `
+    <div class="fsec"><h3>🛞 Pneu</h3>
+      <div class="field"><label>Pneu (fogo)<span class="req">*</span></label><select id="FPN">${oPn()}</select></div>
+    </div>
+    <div class="fsec"><h3>🚜 Equipamento</h3>${cfEquip('FEQ','')}${cfHorim('FH')}</div>
+    <div class="fsec"><h3>🚨 Falha</h3>
+      <div class="field"><label>Tipo<span class="req">*</span></label><select id="FTIFO"><option value="">Selecione</option>${TFALHA.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div class="field"><label>Causa<span class="req">*</span></label><select id="FCAU"><option value="">Selecione</option>${CAUSAS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="frow">
+        <div class="field"><label>Horas até falha</label><input type="number" id="FHF" step="1"/></div>
+        <div class="field"><label>Custo est. R$</label><input type="number" id="FCV" step="0.01"/></div>
+      </div>${cfData}
+    </div>
+    <div class="fsec"><h3>📷 Foto<span class="req">*</span></h3>${cfFoto(true)}</div>
+    <div class="fsec"><h3>📝 Descrição</h3>${cfObs}</div>`;
+
+  return '<div class="fsec"><h3>Em construção</h3></div>';
+}
+
+let _motivoDes='Fim de vida útil';
+function selMotivo(btn,nome){
+  document.querySelectorAll('.motivo-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');_motivoDes=nome;
+  const inp=sc('FMOT');if(inp)inp.value=nome;
+}
+
+// ═══════════════════════════════════════
+// SALVAR
+// ═══════════════════════════════════════
+function resp(){return U._func||U.nome;}
+
+async function salvar(){
+  const btn=sc('SBTN');btn.disabled=true;
+  try{
+    // Foto obrigatória apenas para descarte e falha
+    const fotoObrig=['descarte','falha'];
+    if(fotoObrig.includes(OP)&&!FOTO){sc('FREQ').style.display='block';toast('⚠️ Foto obrigatória');btn.disabled=false;return;}
+    load(true,'Enviando...');
+    let fotoUrl=null;
+    if(FOTO){
+      load(true,'Enviando foto...');
+      const ext=FOTO.name.split('.').pop()||'jpg';
+      fotoUrl=await upload(FOTO,`${OP}/${U.id}_${Date.now()}.${ext}`);
+    }
+    load(true,'Salvando...');
+    let res={};
+
+    if(OP==='pneu-novo'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),dt=vl('FDOT'),nf=vl('FNF'),fo=vl('FFOR'),v=vl('FVL'),da=vl('FD');
+      if(!fg||!mr||!md||!nf||!fo||!v||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const qtd=parseInt(vl('FQTD')||1);
+      const regs=[];
+      for(let i=0;i<qtd;i++) regs.push({numero_fogo:qtd>1?`${fg}-${String(i+1).padStart(2,'0')}`:fg,
+        marca:mr,modelo:vl('FMO'),medida:md,dot:dt,nota_fiscal:nf,fornecedor:fo,
+        valor_compra:parseFloat(v),data_compra:da,sulco_original:parseFloat(vl('FSL')||17),
+        vida_esperada_h:parseInt(vl('FVIDA')||3500),status:'Estoque',tipo_entrada:'Compra',
+        foto_url:fotoUrl,observacoes:vl('FOBS')});
+      await api('pneus','','POST',qtd===1?regs[0]:regs);
+      res={Operação:'Pneu Novo',Fogo:qtd>1?`${fg}-01…${String(qtd).padStart(2,'0')}`:fg,Marca:`${mr} ${md}`,NF:nf,Valor:`R$ ${parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2})}`};
+    }
+
+    else if(OP==='retorno-recap'){
+      const pn=vl('FPN'),sl=vl('FSL'),fo=vl('FFOR'),v=vl('FVL'),da=vl('FD');
+      if(!pn||!sl||!fo||!v||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      // Atualiza status do pneu para Estoque
+      await api('pneus',`id=eq.${pn}`,'PATCH',{status:'Estoque',sulco_original:parseFloat(sl),foto_url:fotoUrl||undefined,observacoes:vl('FOBS')||undefined});
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Retorno Recapagem',
+        status_final:'Estoque',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,
+        obs_campo:`Recapadeira: ${fo}. OS: ${vl('FOS')||'—'}. ${vl('FOBS')}`});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Retorno Recapagem',Fogo:ps?.numero_fogo||`#${pn}`,Sulco:`${sl}mm`,Recapadeira:fo};
+    }
+
+    else if(OP==='transf-entrada'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),ori=vl('FORI'),da=vl('FD');
+      if(!fg||!mr||!md||!ori||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('pneus','','POST',{numero_fogo:fg,marca:mr,modelo:vl('FMO'),medida:md,dot:vl('FDOT'),
+        sulco_original:parseFloat(vl('FSL')||0)||null,data_compra:da,
+        status:'Estoque',tipo_entrada:'Transferência',foto_url:fotoUrl,observacoes:`Origem: ${ori}. ${vl('FOBS')}`});
+      res={Operação:'Transf. Entrada',Fogo:fg,Origem:ori};
+    }
+
+    else if(OP==='transf-saida'){
+      const pn=vl('FPN'),ds=vl('FDST'),da=vl('FD');
+      if(!pn||!ds||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Transferência Saída',
+        status_final:'Transferido',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,
+        obs_campo:`Destino: ${ds}. ${vl('FOBS')}`});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Transf. Saída',Fogo:ps?.numero_fogo||`#${pn}`,Destino:ds};
+    }
+
+    else if(OP==='cad-montado'){
+      const fg=vl('FF').toUpperCase(),mr=vl('FMR'),md=vl('FMD'),sl=vl('FSL'),eq=vl('FEQ'),h=vl('FH');
+      const pos=_posSel;
+      if(!fg||!mr||!md||!sl||!eq||!pos||!h){toast('Selecione posição no diagrama e preencha todos os campos!');load(false);btn.disabled=false;return;}
+      const pr=await api('pneus','','POST',{numero_fogo:fg,marca:mr,modelo:vl('FMO'),medida:md,dot:vl('FDOT'),
+        sulco_original:parseFloat(vl('FSLO')||sl),status:'Em uso',tipo_entrada:'Cadastro campo',
+        foto_url:fotoUrl,observacoes:vl('FOBS')});
+      const pd=Array.isArray(pr)?pr[0]:pr;
+      await api('movimentacoes','','POST',{data:hoje(),pneu_id:pd?.id,tipo:'Montagem',
+        cod_equipamento:eq,posicao:pos,horimetro_mont:parseFloat(h),status_final:'Em uso',
+        responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,obs_campo:`Inventário campo. ${vl('FOBS')}`});
+      res={Operação:'Inventário',Fogo:fg,Equip:eq,Posição:pos,Sulco:`${sl}mm`};
+    }
+
+    else if(OP==='montagem'){
+      const pn=vl('FPN'),sl=vl('FSL'),eq=vl('FEQ'),h=vl('FH'),da=vl('FD');
+      const pos=_posSel;
+      if(!pn||!sl||!eq||!pos||!h||!da){toast('Selecione posição no diagrama e preencha todos os campos!');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Montagem',
+        cod_equipamento:eq,posicao:pos,horimetro_mont:parseFloat(h),sulco_retirada:parseFloat(sl),
+        status_final:'Em uso',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Montagem',Fogo:ps?.numero_fogo||`#${pn}`,Equip:eq,Posição:pos,Horímetro:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='remocao'){
+      const pn=vl('FPN'),eq=vl('FEQ'),h=vl('FH'),da=vl('FD');
+      if(!pn||!eq||!h||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Remoção',
+        cod_equipamento:eq,horimetro_ret:parseFloat(h),sulco_retirada:parseFloat(vl('FSL')||0)||null,
+        status_final:'Removido',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Remoção',Fogo:ps?.numero_fogo||`#${pn}`,Equip:eq,Horímetro:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='recapagem'){
+      const pn=vl('FPN'),eq=vl('FEQ'),h=vl('FH'),fo=vl('FFOR'),da=vl('FD');
+      if(!pn||!eq||!h||!fo||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Recapagem',
+        cod_equipamento:eq,horimetro_ret:parseFloat(h),sulco_retirada:parseFloat(vl('FSL')||0)||null,
+        valor_recapagem:parseFloat(vl('FVL')||0)||null,
+        status_final:'Recapagem',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,
+        obs_campo:`Recapadeira: ${fo}. Previsão: ${vl('FPREV')||'—'}. ${vl('FOBS')}`});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Envio Recapagem',Fogo:ps?.numero_fogo||`#${pn}`,Equip:eq,Recapadeira:fo};
+    }
+
+    else if(OP==='rodizio'){
+      const pn=vl('FPN'),eq=vl('FEQ'),h=vl('FH'),eq2=vl('FEQ2'),da=vl('FD');
+      const pos2=_posSel;
+      if(!pn||!eq||!h||!eq2||!pos2||!da){toast('Selecione posição de destino no diagrama!');load(false);btn.disabled=false;return;}
+      const trf=`TRF-${Date.now()}`;
+      await api('movimentacoes','','POST',[
+        {data:da,pneu_id:parseInt(pn),tipo:'Remoção',cod_equipamento:eq,
+          horimetro_ret:parseFloat(h),status_final:'Rodízio',id_transferencia:trf,
+          responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')},
+        {data:da,pneu_id:parseInt(pn),tipo:'Rodízio',cod_equipamento:eq2,posicao:pos2,
+          horimetro_mont:parseFloat(h),status_final:'Em uso',id_transferencia:trf,
+          responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,obs_campo:vl('FOBS')}
+      ]);
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Rodízio',Fogo:ps?.numero_fogo||`#${pn}`,De:eq,Para:`${eq2}·${pos2}`};
+    }
+
+    else if(OP==='sulco'){
+      const eq=vl('FEQ'),h=vl('FH'),da=vl('FD');
+      if(!eq||!h||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      const inps=document.querySelectorAll('.SI');
+      const regs=[];
+      inps.forEach(i=>{const mm=parseFloat(i.value);if(mm>0)regs.push({
+        data:da,cod_equipamento:eq,posicao:i.dataset.pos,sulco_medido:mm,
+        sulco_original:17,pct_desgaste:+((1-mm/17)*100).toFixed(2),
+        horimetro:parseFloat(h),responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,observacoes:vl('FOBS')});});
+      if(!regs.length){toast('Informe pelo menos uma medição');load(false);btn.disabled=false;return;}
+      await api('medicoes_sulco','','POST',regs.length===1?regs[0]:regs);
+      res={Operação:'Medição Sulco',Equip:eq,Medições:`${regs.length} posição(ões)`,Horímetro:`${parseFloat(h).toLocaleString('pt-BR')}h`};
+    }
+
+    else if(OP==='descarte'){
+      const pn=vl('FPN'),sl=vl('FSL'),eq=vl('FEQ'),h=vl('FH'),da=vl('FD'),obs=vl('FOBS');
+      if(!pn||!sl||!eq||!h||!da||!obs){toast('Preencha todos os campos obrigatórios');load(false);btn.disabled=false;return;}
+      await api('movimentacoes','','POST',{data:da,pneu_id:parseInt(pn),tipo:'Descarte',
+        cod_equipamento:eq,horimetro_ret:parseFloat(h),sulco_retirada:parseFloat(sl),
+        status_final:'Descartado',responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl,
+        obs_campo:`Motivo: ${_motivoDes}. Destino: ${vl('FDST2')||'—'}. ${obs}`});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Descarte',Fogo:ps?.numero_fogo||`#${pn}`,Motivo:_motivoDes,Sulco:`${sl}mm`,Equip:eq};
+    }
+
+    else if(OP==='falha'){
+      const pn=vl('FPN'),eq=vl('FEQ'),h=vl('FH'),tf=vl('FTIFO'),ca=vl('FCAU'),da=vl('FD');
+      if(!pn||!eq||!h||!tf||!ca||!da){toast('Campos obrigatórios!');load(false);btn.disabled=false;return;}
+      await api('falhas','','POST',{data:da,pneu_id:parseInt(pn),cod_equipamento:eq,
+        tipo_falha:tf,causa_falha:ca,horas_ate_falha:parseFloat(vl('FHF')||0)||null,
+        custo_perdido:parseFloat(vl('FCV')||0)||null,prematura:false,
+        descricao:vl('FOBS'),responsavel:resp(),usuario_id:U.id,foto_url:fotoUrl});
+      const ps=PNEUS.find(p=>p.id===parseInt(pn));
+      res={Operação:'Falha',Fogo:ps?.numero_fogo||`#${pn}`,Equip:eq,Tipo:tf,Causa:ca};
+    }
+
+    // Atualiza cache de pneus
+    await carregarBase();
+    sc('SDET').innerHTML=Object.entries(res).map(([k,v])=>`<div class="row"><span>${k}</span><b>${v}</b></div>`).join('');
+    sc('ss').className=`screen ${COR_ATUAL}`;
+    sc('NBTN').className=`nbtn ${COR_ATUAL}`;
+    load(false);show('ss');
+
+  }catch(e){toast('Erro: '+e.message);load(false);btn.disabled=false;console.error(e);}
+}
+
+function voltar(){show('sh');stats();}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded',async()=>{
+  const s=localStorage.getItem('M1U');
+  const st=localStorage.getItem('M1S')||'eng';
+  const sf=localStorage.getItem('M1F')||'';
+  if(s){
+    try{
+      U=JSON.parse(s);
+      SETOR=st;
+      if(sf) U._func=sf;
+      else U._func=U.nome;
+      load(true,'Carregando...');
+      await carregarBase();
+      await stats();
+      home();
+      load(false);
+    }catch(e){localStorage.removeItem('M1U');}
+  }
+  sc('IS').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+});
+</script>
+</body>
+</html>
